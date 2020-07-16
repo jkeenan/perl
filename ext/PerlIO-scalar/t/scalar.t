@@ -166,7 +166,8 @@ close $fh;
 my $data = "a non-empty PV";
 $data = undef;
 open(MEM, '<', \$data) or die "Fail: $!\n";
-my $x = join '', <MEM>;
+my $x;
+{ no warnings 'uninitialized'; $x = join '', <MEM>; }
 is($x, '');
 
 {
@@ -235,10 +236,10 @@ EOF
 
     # Seeking negative should not do funny business.
 
-    ok(!seek(F,  -50, SEEK_SET), $!);
+    { no warnings 'layer'; ok(!seek(F,  -50, SEEK_SET), $!); }
     ok(seek(F, 0, SEEK_SET));
-    ok(!seek(F,  -50, SEEK_CUR), $!);
-    ok(!seek(F, -150, SEEK_END), $!);
+    { no warnings 'layer'; ok(!seek(F,  -50, SEEK_CUR), $!); }
+    { no warnings 'layer'; ok(!seek(F, -150, SEEK_END), $!); }
 }
 
 # RT #43789: should respect tied scalar
@@ -519,7 +520,10 @@ SKIP:
 {
     my $buf0 = "hello";
     open my $fh, "<", \$buf0 or die $!;
-    ok(!seek($fh, -10, SEEK_CUR), "seek to negative position");
+    {
+        no warnings 'layer';
+        ok(!seek($fh, -10, SEEK_CUR), "seek to negative position");
+    }
     is(tell($fh), 0, "shouldn't change the position");
 }
 
