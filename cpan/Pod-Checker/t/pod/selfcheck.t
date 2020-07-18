@@ -7,7 +7,7 @@ BEGIN {
    $THISDIR = dirname $0;
    unshift @INC, $THISDIR;
    require "testpchk.pl";
-   import TestPodChecker qw(testpodcheck);
+   TestPodChecker->import( qw(testpodcheck) );
 }
 
 # test that our POD is correct!
