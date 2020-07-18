@@ -4,11 +4,12 @@ use warnings;
 use Text::ParseWords;
 use Test::More tests => 27;
 
-@words = shellwords(qq(foo "bar quiz" zoo));
+my @words = shellwords(qq(foo "bar quiz" zoo));
 is($words[0], 'foo');
 is($words[1], 'bar quiz');
 is($words[2], 'zoo');
 
+my ($string, $result, @lists);
 {
   # Gonna get some undefined things back
   no warnings 'uninitialized' ;
