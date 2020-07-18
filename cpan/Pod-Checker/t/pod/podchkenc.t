@@ -4,7 +4,7 @@ BEGIN {
    my $THISDIR = dirname $0;
    unshift @INC, $THISDIR;
    require "testpchk.pl";
-   import TestPodChecker;
+   TestPodChecker->import;
 }
 
 # this tests Pod::Checker accepts =encoding directive
