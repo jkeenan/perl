@@ -904,7 +904,7 @@ EOT
   }
 EOT
 
-  $test_body .=  "my (\$error, \$got) = ${package}::constant (\$string);\n";
+  $test_body .=  "(\$error, \$got) = ${package}::constant (\$string);\n";
 
   $test_body .= <<'EOT';
   if ($error or $got ne $expect) {
@@ -923,7 +923,7 @@ EOT
     }
 EOT
 
-    $test_body .= "my (\$error, \$got) = ${package}::constant (\$string);\n";
+    $test_body .= "(\$error, \$got) = ${package}::constant (\$string);\n";
 
     $test_body .= <<'EOT';
     if (ref $expect_bytes) {
