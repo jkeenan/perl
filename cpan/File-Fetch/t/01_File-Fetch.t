@@ -16,7 +16,7 @@ use_ok('File::Fetch');
 $File::Fetch::DEBUG = $File::Fetch::DEBUG   = 1 if $ARGV[0];
 $IPC::Cmd::DEBUG    = $IPC::Cmd::DEBUG      = 1 if $ARGV[0];
 
-$File::Fetch::FORCEIPV4=1;
+{ no warnings 'once'; $File::Fetch::FORCEIPV4=1; };
 
 unless( $ENV{PERL_CORE} ) {
     warn qq[
