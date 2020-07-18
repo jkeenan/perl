@@ -46,7 +46,7 @@ EOT
 
 my $blechanawilla_text = <<'EOT';
 package Foo;
-sub blechanawilla { compilation error (
+sub blechanawilla { no warnings 'syntax'; compilation error (
 EOT
 write_file( File::Spec->catfile( $fulldir, 'blechanawilla.al' ), $blechanawilla_text );
 # This is just to keep the old SVR3 systems happy; they may fail
