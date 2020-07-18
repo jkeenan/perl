@@ -6,6 +6,7 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
+my ($loaded, $count, $cmd, $neg, $str, $var);
 BEGIN { $| = 1; print "1..86\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use Text::Balanced qw ( :ALL );
@@ -61,6 +62,7 @@ sub divide
 }
 
 
+my ($stdtext1, $text);
 $stdtext1 = q{$var = do {"val" && $val;};};
 
 # TESTS 2-4
@@ -149,6 +151,7 @@ expect [ pos $text], [ 0 ];
 expect [ $text ], [ substr($stdtext1,4) ];
 
 
+my ($stdtext2);
 
 # TESTS 32-34
 $stdtext2 = q{$var = "val" && (1,2,3);};
