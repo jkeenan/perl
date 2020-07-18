@@ -6,6 +6,7 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
+my ($loaded, $count, $cmd, $neg, $str, $var);
 BEGIN { $| = 1; print "1..37\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use Text::Balanced qw ( gen_extract_tagged );
@@ -27,7 +28,7 @@ while (defined($str = <DATA>))
 	if ($str =~ s/\A# USING://)
 	{
 		$neg = 0;
-		eval{local$^W;*f = eval $str || die};
+		eval{local$^W; no warnings 'redefine'; *f = eval $str || die};
 		next;
 	}
 	elsif ($str =~ /\A# TH[EI]SE? SHOULD FAIL/) { $neg = 1; next; }
