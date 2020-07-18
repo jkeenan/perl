@@ -76,12 +76,12 @@ SKIP: {
 
 BEGIN {
   if($Config{'useithreads'}) {
-    require threads; import threads;
-    require threads::shared; import threads::shared;
-    require constant; import constant HAVE_THREADS => 1;
+    require threads; threads->import;
+    require threads::shared; threads::shared->import;
+    require constant; constant->import( HAVE_THREADS => 1 );
   }
   else {
-    require constant; import constant HAVE_THREADS => 0;
+    require constant; constant->import( HAVE_THREADS => 0 );
   }
 }
 
