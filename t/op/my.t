@@ -7,6 +7,8 @@ BEGIN {
 
 
 
+my ($x, $y);
+
 sub foo {
     my($a, $b) = @_;
     my $c;
@@ -20,6 +22,8 @@ sub foo {
     is($c, "ok 3\n", 'variable value maintained outside of block');
     is($d, "ok 4\n", 'variable value maintained');
 }
+
+my ($a, @b, $c, @c, $d, %d);
 
 $a = "ok 5\n";
 $b = "ok 6\n";
@@ -69,8 +73,11 @@ is($y, "ok 20\n", 'this one too');
 
 my $i = "outer";
 
-if (my $i = "inner") {
-    is( $i, 'inner', 'my variable inside conditional propagates inside block');
+{
+    my $i = "inner";
+    if ($i eq 'inner') {
+        is( $i, 'inner', 'my variable inside conditional propagates inside block');
+    }
 }
 
 if ((my $i = 1) == 0) {
@@ -80,7 +87,8 @@ else {
     is($i, 1, 'lexical variable lives available inside else block');
 }
 
-my $j = 5;
+my ($j, $jj, $k);
+$j = 5;
 while (my $i = --$j) {
     last unless is( $i, $j, 'lexical inside while block');
 }
@@ -124,9 +132,9 @@ for my $full (keys %fonts) {
 
 sub opta { my @a=() }
 sub opth { my %h=() }
-eval { my $x = opta };
+eval { no strict 'subs'; my $x = opta };
 is($@, '', ' perl #29340, No bizarre copy of array error');
-eval { my $x = opth };
+eval { no strict 'subs'; my $x = opth };
 is($@, '', ' perl #29340, No bizarre copy of array error via hash');
 
 sub foo3 {
