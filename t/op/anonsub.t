@@ -11,9 +11,9 @@ $|=1;
 run_multiple_progs('', \*DATA);
 
 foreach my $code ('sub;', 'sub ($) ;', '{ $x = sub }', 'sub ($) && 1') {
-    eval "use p5; $code";
+    eval "$code";
     like($@, qr/^Illegal declaration of anonymous subroutine at/,
-	 "'$code' is illegal");
+    "'$code' is illegal");
 }
 
 {
@@ -50,8 +50,8 @@ sub X {
     my $n = "ok 1\n";
     sub {
         my $dummy = $n;	# eval can't close on $n without internal reference
-	eval 'print $n';
-	die $@ if $@;
+        eval 'print $n';
+        die $@ if $@;
     };
 }
 my $x = X();
