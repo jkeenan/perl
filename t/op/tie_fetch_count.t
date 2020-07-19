@@ -11,10 +11,6 @@ BEGIN {
 
 plan (tests => 343);
 
-use p5;
-use strict;
-use warnings;
-
 my $can_config = eval { require Config; 1 };
 
 my $count = 0;

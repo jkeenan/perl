@@ -607,7 +607,7 @@ EXPECT
 # skipped on EBCDIC because "2" | "8" is 0xFA (not COLON as it is on ASCII),
 # which isn't representable in this file's UTF-8 encoding.
 # NAME Bug 53482 (and maybe others)
-use p5;
+
 sub TIESCALAR { my $foo = $_[1]; bless \$foo, $_[0] }
 sub FETCH { ${$_[0]} }
 tie my $x1, "main", 2;
