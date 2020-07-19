@@ -1,6 +1,6 @@
 package Symbol;
 
-use p5;
+
 
 =head1 NAME
 

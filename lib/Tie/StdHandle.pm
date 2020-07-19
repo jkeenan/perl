@@ -1,6 +1,6 @@
 package Tie::StdHandle; 
 
-use p5;
+
 use strict;
 
 use Tie::Handle;

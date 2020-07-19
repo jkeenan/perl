@@ -1,6 +1,6 @@
 package Tie::Handle;
 
-use p5;
+
 use 5.006_001;
 our $VERSION = '4.3';
 

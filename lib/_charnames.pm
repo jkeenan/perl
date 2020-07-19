@@ -3,7 +3,7 @@
 # subject to change or removal at any time without notice.  Don't use it
 # directly.  Use the public <charnames> module instead.
 
-use p5;
+
 
 package _charnames;
 use strict;

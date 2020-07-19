@@ -1,6 +1,6 @@
 package English;
 
-use p5;
+
 
 our $VERSION = '1.11';
 

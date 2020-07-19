@@ -59,7 +59,7 @@ p7
 
 =head1 SYNOPSIS
 
-use p5;
+
 
 =head1 DESCRIPTION
 

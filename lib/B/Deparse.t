@@ -1,6 +1,6 @@
 #!./perl
 
-use p5;
+
 
 BEGIN {
     splice @INC, 0, 0, 't', '.';

@@ -1,6 +1,6 @@
 package bytes;
 
-use p5;
+
 
 our $VERSION = '1.07';
 

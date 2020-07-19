@@ -10,7 +10,7 @@ BEGIN {
     }
 }
 
-use p5;
+
 
 package Oscalar;
 use overload (
