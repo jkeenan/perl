@@ -165,7 +165,7 @@ my @opt_specs = (
 
 ## Parse options
 GetOptions(\%options, @opt_specs)  ||  pod2usage(2);
-$Pod::Usage::Formatter = $options{formatter} if $options{formatter};
+{ no warnings 'once'; $Pod::Usage::Formatter = $options{formatter} if $options{formatter}; }
 require Pod::Usage;
 Pod::Usage->import();
 pod2usage(1)  if ($options{help});
