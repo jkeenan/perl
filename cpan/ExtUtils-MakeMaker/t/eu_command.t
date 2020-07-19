@@ -6,11 +6,11 @@ BEGIN {
 chdir 't';
 
 BEGIN {
-    $Testfile = 'testfile.foo';
+    our $Testfile = 'testfile.foo';
 }
 
 BEGIN {
-    1 while unlink $Testfile, 'newfile';
+    1 while unlink $::Testfile, 'newfile';
     # forcibly remove ecmddir/temp2, but don't import mkpath
     use File::Path ();
     File::Path::rmtree( 'ecmddir' ) if -e 'ecmddir';
@@ -22,7 +22,7 @@ use File::Spec;
 BEGIN {
     # bad neighbor, but test_f() uses exit()
     *CORE::GLOBAL::exit = '';   # quiet 'only once' warning.
-    *CORE::GLOBAL::exit = sub (;$) { return $_[0] };
+    *CORE::GLOBAL::exit = sub { return $_[0] };
     use_ok( 'ExtUtils::Command' );
 }
 
@@ -46,18 +46,18 @@ BEGIN {
         'concatenation worked' );
 
     # the truth value here is reversed -- Perl true is shell false
-    @ARGV = ( $Testfile );
+    our @ARGV = ( $::Testfile );
     is( test_f(), 1, 'testing non-existent file' );
 
     # these are destructive, have to keep setting @ARGV
-    @ARGV = ( $Testfile );
+    @ARGV = ( $::Testfile );
     touch();
 
-    @ARGV = ( $Testfile );
+    @ARGV = ( $::Testfile );
     is( test_f(), 0, 'testing touch() and test_f()' );
-    is_deeply( \@ARGV, [$Testfile], 'test_f preserves @ARGV' );
+    is_deeply( \@ARGV, [$::Testfile], 'test_f preserves @ARGV' );
 
-    @ARGV = ( $Testfile );
+    @ARGV = ( $::Testfile );
     ok( -e $ARGV[0], 'created!' );
 
     my ($now) = time;
@@ -77,20 +77,20 @@ BEGIN {
     my $new_stamp = (stat('newfile'))[9];
     cmp_ok( abs($new_stamp - $stamp), '>=', 2,  'newer file created' );
 
-    @ARGV = ('newfile', $Testfile);
+    @ARGV = ('newfile', $::Testfile);
     eqtime();
 
-    $stamp = (stat($Testfile))[9];
+    $stamp = (stat($::Testfile))[9];
     cmp_ok( abs($new_stamp - $stamp), '<=', 1, 'eqtime' );
 
     # eqtime use to clear the contents of the file being equalized!
-    open(FILE, ">>$Testfile") || die $!;
+    open(FILE, ">>$::Testfile") || die $!;
     print FILE "Foo";
     close FILE;
 
-    @ARGV = ('newfile', $Testfile);
+    @ARGV = ('newfile', $::Testfile);
     eqtime();
-    ok( -s $Testfile, "eqtime doesn't clear the file being equalized" );
+    ok( -s $::Testfile, "eqtime doesn't clear the file being equalized" );
 
     SKIP: {
         if ($^O eq 'amigaos' || $^O eq 'os2' || $^O eq 'MSWin32' ||
@@ -101,34 +101,34 @@ BEGIN {
         }
 
         # change a file to execute-only
-        @ARGV = ( '0100', $Testfile );
+        @ARGV = ( '0100', $::Testfile );
         ExtUtils::Command::chmod();
 
-        is( ((stat($Testfile))[2] & 07777) & 0700,
+        is( ((stat($::Testfile))[2] & 07777) & 0700,
             0100, 'change a file to execute-only' );
 
         # change a file to read-only
-        @ARGV = ( '0400', $Testfile );
+        @ARGV = ( '0400', $::Testfile );
         ExtUtils::Command::chmod();
 
-        is( ((stat($Testfile))[2] & 07777) & 0700,
+        is( ((stat($::Testfile))[2] & 07777) & 0700,
             0400, 'change a file to read-only' );
 
         # change a file to write-only
-        @ARGV = ( '0200', $Testfile );
+        @ARGV = ( '0200', $::Testfile );
         ExtUtils::Command::chmod();
 
-        is( ((stat($Testfile))[2] & 07777) & 0700,
+        is( ((stat($::Testfile))[2] & 07777) & 0700,
             0200, 'change a file to write-only' );
     }
 
     # change a file to read-write
-    @ARGV = ( '0600', $Testfile );
+    @ARGV = ( '0600', $::Testfile );
     my @orig_argv = @ARGV;
     ExtUtils::Command::chmod();
     is_deeply( \@ARGV, \@orig_argv, 'chmod preserves @ARGV' );
 
-    is( ((stat($Testfile))[2] & 07777) & 0700,
+    is( ((stat($::Testfile))[2] & 07777) & 0700,
         0600, 'change a file to read-write' );
 
 
@@ -185,37 +185,37 @@ BEGIN {
 
     @ARGV = ( $test_dir );
     # copy a file to a nested subdirectory
-    unshift @ARGV, $Testfile;
+    unshift @ARGV, $::Testfile;
     @orig_argv = @ARGV;
     cp();
     is_deeply( \@ARGV, \@orig_argv, 'cp preserves @ARGV' );
 
-    ok( -e File::Spec->join( 'ecmddir', 'temp2', $Testfile ), 'copied okay' );
+    ok( -e File::Spec->join( 'ecmddir', 'temp2', $::Testfile ), 'copied okay' );
 
     # cp should croak if destination isn't directory (not a great warning)
-    @ARGV = ( $Testfile ) x 3;
+    @ARGV = ( $::Testfile ) x 3;
     eval { cp() };
 
     like( $@, qr/Too many arguments/, 'cp croaks on error' );
 
     # move a file to a subdirectory
-    @ARGV = ( $Testfile, 'ecmddir' );
+    @ARGV = ( $::Testfile, 'ecmddir' );
     @orig_argv = @ARGV;
     ok( mv() );
     is_deeply( \@ARGV, \@orig_argv, 'mv preserves @ARGV' );
 
-    ok( ! -e $Testfile, 'moved file away' );
-    ok( -e File::Spec->join( 'ecmddir', $Testfile ), 'file in new location' );
+    ok( ! -e $::Testfile, 'moved file away' );
+    ok( -e File::Spec->join( 'ecmddir', $::Testfile ), 'file in new location' );
 
     # mv should also croak with the same wacky warning
-    @ARGV = ( $Testfile ) x 3;
+    @ARGV = ( $::Testfile ) x 3;
 
     eval { mv() };
     like( $@, qr/Too many arguments/, 'mv croaks on error' );
 
     # Test expand_wildcards()
     {
-        my $file = $Testfile;
+        my $file = $::Testfile;
         @ARGV = ();
         chdir 'ecmddir';
 
@@ -238,8 +238,8 @@ BEGIN {
     }
 
     # remove some files
-    my @files = @ARGV = ( File::Spec->catfile( 'ecmddir', $Testfile ),
-    File::Spec->catfile( 'ecmddir', 'temp2', $Testfile ) );
+    my @files = @ARGV = ( File::Spec->catfile( 'ecmddir', $::Testfile ),
+    File::Spec->catfile( 'ecmddir', 'temp2', $::Testfile ) );
     rm_f();
 
     ok( ! -e $_, "removed $_ successfully" ) for (@ARGV);
@@ -279,7 +279,7 @@ BEGIN {
 }
 
 END {
-    1 while unlink $Testfile, 'newfile';
+    1 while unlink $::Testfile, 'newfile';
     File::Path::rmtree( 'ecmddir' ) if -e 'ecmddir';
     File::Path::rmtree( 'd2utest' ) if -e 'd2utest';
 }
