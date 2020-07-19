@@ -10,16 +10,14 @@ $|  = 1;
 use warnings;
 use Config;
 
-use p5;
-
 plan tests => 188;
 
 sub ok_cloexec {
     SKIP: {
 	skip "no fcntl", 1 unless $Config{d_fcntl};
-	my $fd = fileno($_[0]);
+	my $fh = $_[0] // '';
+	my $fd = fileno($fh);
 	fresh_perl_is(qq(
-        use p5;
 	    print open(F, "+<&=$fd") ? 1 : 0, "\\n";
 	), "0\n", { run_as_five => 1 }, "not inherited across exec");
     }
@@ -323,13 +321,13 @@ SKIP: {
     gimme($fh1{k});
     like($@, qr/<\$fh1\{...}> line 1\./, "autoviv fh package helem");
 
-    my @fh2;
+    undef @fh2;
     open($fh2[0], "TEST");
     ok_cloexec($fh2[0]);
     gimme($fh2[0]);
     like($@, qr/<\$fh2\[...\]> line 1\./, "autoviv fh lexical aelem");
 
-    my %fh3;
+    undef %fh3;
     open($fh3{k}, "TEST");
     ok_cloexec($fh3{h});
     gimme($fh3{k});
@@ -407,7 +405,6 @@ is($@, '', 'no "Modification of a read-only value" when closing');
 #               been opened and written to.
 fresh_perl_is(
     '
-      use p5;
       open my $fh, ">", \*STDOUT;
       print $fh "hello";
      "".*STDOUT;
@@ -459,7 +456,6 @@ pass("no crash when open autovivifies glob in freed package");
     ok(chmod(0666, $temp), "set mode to a known value");
     my ($final_mode, $final_mtime) = (stat $temp)[2, 9];
 
-    use p7;
     my $fn = "$temp\0.invalid";
     my $fno = bless \(my $fn2 = "$temp\0.overload"), "OverloadTest";
     is(open(I, $fn), undef, "open with nul in pathnames since 5.18 [perl #117265]");
