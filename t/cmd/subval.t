@@ -1,40 +1,49 @@
 #!./perl
 
-use p5;
+# Declaring $i with 'our' to make it available for the ancient "$main'i++;" in
+# package foo.
+our $i;
 
 sub foo1 {
+    no warnings 'void';
     'true1';
     if ($_[0]) { 'true2'; }
 }
 
 sub foo2 {
+    no warnings 'void';
     'true1';
     if ($_[0]) { return 'true2'; } else { return 'true3'; }
     'true0';
 }
 
 sub foo3 {
+    no warnings 'void';
     'true1';
     unless ($_[0]) { 'true2'; }
 }
 
 sub foo4 {
+    no warnings 'void';
     'true1';
     unless ($_[0]) { 'true2'; } else { 'true3'; }
 }
 
 sub foo5 {
+    no warnings 'void';
     'true1';
     'true2' if $_[0];
 }
 
 sub foo6 {
+    no warnings 'void';
     'true1';
     'true2' unless $_[0];
 }
 
 print "1..36\n";
 
+my ($foo, $x);
 if (&foo1(0) eq '0') {print "ok 1\n";} else {print "not ok 1 $foo\n";}
 if (&foo1(1) eq 'true2') {print "ok 2\n";} else {print "not ok 2\n";}
 if (&foo2(0) eq 'true3') {print "ok 3\n";} else {print "not ok 3\n";}
@@ -52,6 +61,7 @@ if (&foo6(1) eq '1') {print "ok 12\n";} else {print "not ok 12 $x\n";}
 
 # Now test to see that recursion works using a Fibonacci number generator
 
+my $level = 0;
 sub fib {
     my($arg) = @_;
     my($foo);
@@ -66,8 +76,7 @@ sub fib {
     $foo;
 }
 
-@good = (0,1,1,2,3,5,8,13,21,34,55,89);
-
+my @good = (0,1,1,2,3,5,8,13,21,34,55,89);
 for ($i = 1; $i <= 10; $i++) {
     $foo = $i + 12;
     if (&fib($i) == $good[$i]) {
@@ -88,8 +97,9 @@ print join(':',&ary1) eq '1:2:3' ? "ok 24\n" : "not ok 24\n";
 
 sub ary2 {
     do {
-	return (1,2,3);
-	(3,2,1);
+	    return (1,2,3);
+        no warnings 'void';
+	    (3,2,1);
     };
     0;
 }
@@ -100,8 +110,9 @@ $x = join(':',&ary2);
 print $x eq '1:2:3' ? "ok 26\n" : "not ok 26 $x\n";
 
 sub somesub {
-    local($num,$P,$F,$L) = @_;
-    ($p,$f,$l) = caller;
+    #local($num,$P,$F,$L) = @_;
+    my ($num,$P,$F,$L) = @_;
+    my ($p,$f,$l) = caller;
     print "$p:$f:$l" eq "$P:$F:$L" ? "ok $num\n" : "not ok $num $p:$f:$l ne $P:$F:$L\n";
 }
 
@@ -154,6 +165,8 @@ sub iseof {
 {package foo;
 
  sub main'file_package {
+     # Are we really going to maintain Perl 4 package separators in Perl 7?
+     no warnings 'syntax';
         local(*F) = @_;
 
         open(F, 'Cmd_subval.tmp') || die "can't open: $!\n";
@@ -162,6 +175,8 @@ sub iseof {
  }
 
  sub main'info_package {
+     # Are we really going to maintain Perl 4 package separators in Perl 7?
+     no warnings 'syntax';
         local(*F);
 
         open(F, 'Cmd_subval.tmp') || die "can't open: $!\n";
@@ -171,6 +186,8 @@ sub iseof {
  }
 
  sub iseof {
+     # Are we really going to maintain Perl 4 package separators in Perl 7?
+     no warnings 'syntax';
         local(*UNIQ) = @_;
 
 	$main'i++;
