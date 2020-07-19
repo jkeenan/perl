@@ -41,7 +41,7 @@ plan tests => 3904;
 use feature (sprintf(":%vd", $^V)); # to avoid relying on the feature
                                     # logic to add CORE::
 use B::Deparse;
-my $deparse = new B::Deparse;
+my $deparse = B::Deparse->new;
 
 my %SEEN;
 my %SEEN_STRENGH;
@@ -95,7 +95,7 @@ sub testit {
 	    package test;
 	    no warnings 'experimental::isa';
 	    use subs ();
-	    import subs $keyword;
+	    subs->import($keyword);
 	    $code = "no strict 'vars'; sub { ${vars}() = $expr }";
 	    $code = "use feature 'isa';\n$code" if $keyword eq "isa";
 	    $code_ref = eval $code
@@ -138,7 +138,7 @@ sub do_infix_keyword {
     $SEEN_STRENGH{$keyword} = $strong;
     my $expr = "(\$a $keyword \$b)";
     my $nkey = $infix_map{$keyword} // $keyword;
-    my $expr = "(\$a $keyword \$b)";
+    $expr = "(\$a $keyword \$b)";
     my $exp = "\$a $nkey \$b";
     $exp = "($exp)" if $parens;
     $exp .= ";";
@@ -240,9 +240,9 @@ testit dbmclose => 'CORE::dbmclose %foo;';
 
 testit delete   => 'CORE::delete $h{\'foo\'};', 'delete $h{\'foo\'};';
 testit delete   => 'CORE::delete $h{\'foo\'};', undef, 1;
-testit delete   => 'CORE::delete @h{\'foo\'};', undef, 1;
+testit delete   => 'CORE::delete $h{\'foo\'};', undef, 1;
 testit delete   => 'CORE::delete $h[0];', undef, 1;
-testit delete   => 'CORE::delete @h[0];', undef, 1;
+testit delete   => 'CORE::delete $h[0];', undef, 1;
 testit delete   => 'delete $h{\'foo\'};',       'delete $h{\'foo\'};';
 
 # do is listed as strong, but only do { block } is strong;
