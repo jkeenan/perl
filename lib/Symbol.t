@@ -15,10 +15,10 @@ ok( $_ eq 'foo', 'check $_ clobbering' );
 
 
 # First test gensym()
-$sym1 = gensym;
+my $sym1 = gensym;
 ok( ref($sym1) eq 'GLOB', 'gensym() returns a GLOB' );
 
-$sym2 = gensym;
+my $sym2 = gensym;
 
 ok( $sym1 ne $sym2, 'gensym() returns a different GLOB' );
 
@@ -33,7 +33,7 @@ use Symbol qw(geniosym);
 $sym1 = geniosym;
 like( $sym1, qr/=IO\(/, 'got an IO ref' );
 
-$FOO = 'Eymascalar';
+our $FOO = 'Eymascalar';
 *FOO = $sym1;
 
 is( $sym1, *FOO{IO}, 'assigns into glob OK' );
@@ -68,7 +68,7 @@ use Symbol qw(qualify);  # must import into this package too
 
 # tests for delete_package
 package main;
-$Transient::variable = 42;
+{ no warnings 'once'; $Transient::variable = 42; }
 ok( exists $::{'Transient::'}, 'transient stash exists' );
 ok( defined $Transient::{variable}, 'transient variable in stash' );
 Symbol::delete_package('Transient');
@@ -76,14 +76,14 @@ ok( !exists $Transient::{variable}, 'transient variable no longer in stash' );
 is( scalar(keys %Transient::), 0, 'transient stash is empty' );
 ok( !exists $::{'Transient::'}, 'no transient stash' );
 
-$Foo::variable = 43;
+{ no warnings 'once'; $Foo::variable = 43; }
 ok( exists $::{'Foo::'}, 'second transient stash exists' );
 ok( defined $Foo::{variable}, 'second transient variable in stash' );
 Symbol::delete_package('::Foo');
 is( scalar(keys %Foo::), 0, 'second transient stash is empty' );
 ok( !exists $::{'Foo::'}, 'no second transient stash' );
 
-$Bar::variable = 44;
+{ no warnings 'once'; $Bar::variable = 44; }
 ok( exists $::{'Bar::'}, 'third transient stash exists' );
 ok( defined $Bar::{variable}, 'third transient variable in stash' );
 ok( ! defined(Symbol::delete_package('Bar::Bar::')),
