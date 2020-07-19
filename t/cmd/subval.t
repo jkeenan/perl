@@ -110,7 +110,6 @@ $x = join(':',&ary2);
 print $x eq '1:2:3' ? "ok 26\n" : "not ok 26 $x\n";
 
 sub somesub {
-    #local($num,$P,$F,$L) = @_;
     my ($num,$P,$F,$L) = @_;
     my ($p,$f,$l) = caller;
     print "$p:$f:$l" eq "$P:$F:$L" ? "ok $num\n" : "not ok $num $p:$f:$l ne $P:$F:$L\n";
