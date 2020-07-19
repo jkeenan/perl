@@ -4,10 +4,7 @@
 # the format supported by re/regexp.t.  If you want to add a test
 # that does fit that format, add it to re/re_tests, not here.
 
-use strict;
-use warnings;
 no warnings 'experimental::vlb';
-use 5.010;
 
 sub run_tests;
 
