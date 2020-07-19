@@ -6,7 +6,6 @@
 
 package Scalar::Util;
 
-use p5;
 use strict;
 use warnings;
 require Exporter;
