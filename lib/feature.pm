@@ -5,8 +5,6 @@
 
 package feature;
 
-use p5;
-
 our $VERSION = '1.59';
 
 our %feature = (
