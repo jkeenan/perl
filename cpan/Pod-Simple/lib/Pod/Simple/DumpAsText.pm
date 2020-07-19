@@ -1,6 +1,6 @@
 
 require 5;
-use p5;
+
 
 package Pod::Simple::DumpAsText;
 $VERSION = '3.40';
