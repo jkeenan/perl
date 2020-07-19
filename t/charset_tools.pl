@@ -1,5 +1,4 @@
 # Tools to aid testing across platforms with different character sets.
-use p5;
 
 $::IS_ASCII  = ord 'A' ==  65;
 $::IS_EBCDIC = ord 'A' == 193;
@@ -9,37 +8,43 @@ $::IS_EBCDIC = ord 'A' == 193;
 # the set of 256 characters which is usually called Latin1.  However, they
 # will work properly with any character input, not just Latin1.
 
-*native_to_uni = ($::IS_ASCII)
-                ? sub { return shift }
-                : sub {
-    my $string = shift;
+{
+    no warnings 'once';
+    *native_to_uni = ($::IS_ASCII)
+                    ? sub { return shift }
+                    : sub {
+        my $string = shift;
 
-    my $output = "";
-    for my $i (0 .. length($string) - 1) {
-        $output .= chr(utf8::native_to_unicode(ord(substr($string, $i, 1))));
-    }
-    # Preserve utf8ness of input onto the output, even if it didn't need to be
-    # utf8
-    utf8::upgrade($output) if utf8::is_utf8($string);
+        my $output = "";
+        for my $i (0 .. length($string) - 1) {
+            $output .= chr(utf8::native_to_unicode(ord(substr($string, $i, 1))));
+        }
+        # Preserve utf8ness of input onto the output, even if it didn't need to be
+        # utf8
+        utf8::upgrade($output) if utf8::is_utf8($string);
 
-    return $output;
-};
+        return $output;
+    };
+}
 
-*uni_to_native = ($::IS_ASCII)
-                ? sub { return shift }
-                : sub {
-    my $string = shift;
+{
+    no warnings 'once';
+    *uni_to_native = ($::IS_ASCII)
+                    ? sub { return shift }
+                    : sub {
+        my $string = shift;
 
-    my $output = "";
-    for my $i (0 .. length($string) - 1) {
-        $output .= chr(utf8::unicode_to_native(ord(substr($string, $i, 1))));
-    }
-    # Preserve utf8ness of input onto the output, even if it didn't need to be
-    # utf8
-    utf8::upgrade($output) if utf8::is_utf8($string);
+        my $output = "";
+        for my $i (0 .. length($string) - 1) {
+            $output .= chr(utf8::unicode_to_native(ord(substr($string, $i, 1))));
+        }
+        # Preserve utf8ness of input onto the output, even if it didn't need to be
+        # utf8
+        utf8::upgrade($output) if utf8::is_utf8($string);
 
-    return $output;
-};
+        return $output;
+    };
+}
 
 my @utf8_skip;
 
@@ -68,84 +73,88 @@ if ($::IS_EBCDIC) {
     );
 }
 
-*byte_utf8a_to_utf8n = ($::IS_ASCII)
-                ? sub { return shift }
-                : sub {
-    # Convert a UTF-8 byte sequence into the platform's native UTF-8
-    # equivalent, currently only UTF-8 and UTF-EBCDIC.
+{
+    no warnings 'once';
+    *byte_utf8a_to_utf8n = ($::IS_ASCII)
+                    ? sub { return shift }
+                    : sub {
+        # Convert a UTF-8 byte sequence into the platform's native UTF-8
+        # equivalent, currently only UTF-8 and UTF-EBCDIC.
 
-    my $string = shift;
-    die "Input to byte_utf8a-to_utf8n() must not be flagged UTF-8"
-                                                    if utf8::is_utf8($string);
-    die "Expecting ASCII or EBCDIC" unless $::IS_EBCDIC;
+        my $string = shift;
+        die "Input to byte_utf8a-to_utf8n() must not be flagged UTF-8"
+                                                        if utf8::is_utf8($string);
+        die "Expecting ASCII or EBCDIC" unless $::IS_EBCDIC;
 
-    my $length = length($string);
-    #diag($string);
-    #diag($length);
-    my $out = "";
-    for ($i = 0; $i < $length; $i++) {
-        my $byte = ord substr($string, $i, 1);
-        my $byte_count = $utf8_skip[$byte];
-        #diag($byte);
-        #diag($byte_count);
+        my $length = length($string);
+        #diag($string);
+        #diag($length);
+        my $out = "";
+        my $i;
+        for ($i = 0; $i < $length; $i++) {
+            my $byte = ord substr($string, $i, 1);
+            my $byte_count = $utf8_skip[$byte];
+            #diag($byte);
+            #diag($byte_count);
 
-        die "Illegal start byte" if $byte_count < 0;
-        if ($i + $byte_count > $length) {
-            die "Attempt to read " . $i + $byte_count - $length . " beyond end-of-string";
-        }
-
-        # Just translate UTF-8 invariants directly.
-        if ($byte_count == 1) {
-            $out .= chr utf8::unicode_to_native($byte);
-            next;
-        }
-
-        # Otherwise calculate the code point ordinal represented by the
-        # sequence beginning with this byte, using the algorithm adapted from
-        # utf8.c.  We absorb each byte in the sequence as we go along
-        my $ord = $byte & (0x1F >> ($byte_count - 2));
-        my $bytes_remaining = $byte_count - 1;
-        while ($bytes_remaining > 0) {
-            $byte = ord substr($string, ++$i, 1);
-            unless (($byte & 0xC0) == 0x80) {
-                die sprintf "byte '%X' is not a valid continuation", $byte;
+            die "Illegal start byte" if $byte_count < 0;
+            if ($i + $byte_count > $length) {
+                die "Attempt to read " . $i + $byte_count - $length . " beyond end-of-string";
             }
-            $ord = $ord << 6 | ($byte & 0x3f);
-            $bytes_remaining--;
+
+            # Just translate UTF-8 invariants directly.
+            if ($byte_count == 1) {
+                $out .= chr utf8::unicode_to_native($byte);
+                next;
+            }
+
+            # Otherwise calculate the code point ordinal represented by the
+            # sequence beginning with this byte, using the algorithm adapted from
+            # utf8.c.  We absorb each byte in the sequence as we go along
+            my $ord = $byte & (0x1F >> ($byte_count - 2));
+            my $bytes_remaining = $byte_count - 1;
+            while ($bytes_remaining > 0) {
+                $byte = ord substr($string, ++$i, 1);
+                unless (($byte & 0xC0) == 0x80) {
+                    die sprintf "byte '%X' is not a valid continuation", $byte;
+                }
+                $ord = $ord << 6 | ($byte & 0x3f);
+                $bytes_remaining--;
+            }
+            #diag($byte);
+            #diag($ord);
+
+            my $expected_bytes = $ord < 0x80
+                                 ? 1
+                                 : $ord < 0x800
+                                   ? 2
+                                   : $ord < 0x10000
+                                     ? 3
+                                     : $ord < 0x200000
+                                       ? 4
+                                       : $ord < 0x4000000
+                                         ? 5
+                                         : $ord < 0x80000000
+                                           ? 6
+                                           : 7;
+                                           #: (uv) < UTF8_QUAD_MAX ? 7 : 13 )
+
+            # Make sure is not an overlong sequence
+            if ($byte_count != $expected_bytes) {
+                die sprintf "character U+%X should occupy %d bytes, not %d",
+                                                $ord, $expected_bytes, $byte_count;
+            }
+
+            # Now that we have found the code point the original UTF-8 meant, we
+            # use the native chr function to get its native string equivalent.
+            $out .= chr utf8::unicode_to_native($ord);
         }
-        #diag($byte);
-        #diag($ord);
 
-        my $expected_bytes = $ord < 0x80
-                             ? 1
-                             : $ord < 0x800
-                               ? 2
-                               : $ord < 0x10000
-                                 ? 3
-                                 : $ord < 0x200000
-                                   ? 4
-                                   : $ord < 0x4000000
-                                     ? 5
-                                     : $ord < 0x80000000
-                                       ? 6
-                                       : 7;
-                                       #: (uv) < UTF8_QUAD_MAX ? 7 : 13 )
-
-        # Make sure is not an overlong sequence
-        if ($byte_count != $expected_bytes) {
-            die sprintf "character U+%X should occupy %d bytes, not %d",
-                                            $ord, $expected_bytes, $byte_count;
-        }
-
-        # Now that we have found the code point the original UTF-8 meant, we
-        # use the native chr function to get its native string equivalent.
-        $out .= chr utf8::unicode_to_native($ord);
-    }
-
-    utf8::encode($out); # Turn off utf8 flag.
-    #diag($out);
-    return $out;
-};
+        utf8::encode($out); # Turn off utf8 flag.
+        #diag($out);
+        return $out;
+    };
+}
 
 my @i8_to_native = (    # Only code page 1047 so far.
 # _0   _1   _2   _3   _4   _5   _6   _7   _8   _9   _A   _B   _C   _D   _E   _F
@@ -178,13 +187,16 @@ for (my $i = 0; $i < 256; $i++) {
 # like the start byte C5 to map to something else, as C5 is actually an 'E' in
 # EBCDIC so can't be a real start byte, as it must be an invariant; and it
 # maps 0x45 (an ASCII 'E') to C5.
-*I8_to_native = ($::IS_ASCII)
-                ? sub { return shift }
-                : sub { return join "", map { chr $i8_to_native[ord $_] }
-                                            split "", shift };
-*native_to_I8 = ($::IS_ASCII)
-                ? sub { return shift }
-                : sub { return join "", map { chr $native_to_i8[ord $_] }
-                                            split "", shift };
+{
+    no warnings 'once';
+    *I8_to_native = ($::IS_ASCII)
+                    ? sub { return shift }
+                    : sub { return join "", map { chr $i8_to_native[ord $_] }
+                                                split "", shift };
+    *native_to_I8 = ($::IS_ASCII)
+                    ? sub { return shift }
+                    : sub { return join "", map { chr $native_to_i8[ord $_] }
+                                                split "", shift };
+}
 
 1
