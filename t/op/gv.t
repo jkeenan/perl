@@ -10,7 +10,7 @@ BEGIN {
     set_up_inc('../lib');
 }
 
-use p5;
+
 use warnings;
 
 plan(tests => 284);

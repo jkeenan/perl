@@ -10,7 +10,7 @@ BEGIN {
     skip_all_if_miniperl("miniperl can't load attributes");
 }
 
-use p5;
+
 use warnings;
 
 plan tests => 48;

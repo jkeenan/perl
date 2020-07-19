@@ -7,7 +7,7 @@ BEGIN {
     plan (tests => 22); # some tests are run in BEGIN block
 }
 
-use p5;
+
 
 is __SUB__, "__SUB__", '__SUB__ is a bareword outside of use feature';
 

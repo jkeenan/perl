@@ -9,7 +9,7 @@ BEGIN {
     set_up_inc('../lib');
 }
 
-use p5;
+
 
 $| = 1;
 umask 0;

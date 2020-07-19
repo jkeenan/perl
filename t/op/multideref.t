@@ -15,7 +15,7 @@ BEGIN {
     set_up_inc("../lib");
 }
 
-use p5;
+
 use warnings;
 use strict;
 

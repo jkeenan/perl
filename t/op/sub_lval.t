@@ -7,7 +7,7 @@ BEGIN {
 }
 plan tests=>211;
 
-use p5;
+
 
 sub a : lvalue { my $a = 34; ${\(bless \$a)} }  # Return a temporary
 sub b : lvalue { ${\shift} }

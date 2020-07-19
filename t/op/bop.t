@@ -20,7 +20,7 @@ BEGIN {
 # (Just-in-time test naming)
 plan tests => 501;
 
-use p5;
+
 
 # numerics
 ok ((0xdead & 0xbeef) == 0x9ead);

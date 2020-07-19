@@ -7,7 +7,7 @@ BEGIN {
     require './charset_tools.pl';
 }
 
-use p5;
+
 plan(tests => 9);
 
 {

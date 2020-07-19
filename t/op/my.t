@@ -5,7 +5,7 @@ BEGIN {
     set_up_inc('../lib');
 }
 
-use p5;
+
 
 sub foo {
     my($a, $b) = @_;

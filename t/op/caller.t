@@ -8,7 +8,7 @@ BEGIN {
     plan( tests => 97 ); # some tests are run in a BEGIN block
 }
 
-use p5;
+
 
 my @c;
 

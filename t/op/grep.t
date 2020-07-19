@@ -12,7 +12,7 @@ BEGIN {
 
 plan( tests => 67 );
 
-use p5;
+
 
 my $test = 0;
 {

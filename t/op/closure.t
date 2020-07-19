@@ -12,7 +12,7 @@ BEGIN {
     set_up_inc('../lib');
 }
 
-use p5;
+
 use Config;
 
 my $i = 1;

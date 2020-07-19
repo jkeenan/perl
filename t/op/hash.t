@@ -6,7 +6,7 @@ BEGIN {
     set_up_inc('../lib');
 }
 
-use p5;
+
 use strict;
 
 skip_all("Need to fix ExtUtil::MakeMaker then Hash::Util");

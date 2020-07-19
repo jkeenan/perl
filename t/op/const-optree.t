@@ -9,7 +9,7 @@ BEGIN {
     set_up_inc('../lib');
 }
 
-use p5;
+
 plan 148;
 
 # @tests is an array of hash refs, each of which can have various keys:

@@ -9,7 +9,7 @@ BEGIN {
     skip_all_if_miniperl("miniperl can't load attributes");
 }
 
-use p5;
+
 use warnings;
 
 $SIG{__WARN__} = sub { die @_ };

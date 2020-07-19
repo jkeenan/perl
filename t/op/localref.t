@@ -4,7 +4,7 @@ chdir 't' if -d 't';
 @INC = qw(. ../lib);
 require "./test.pl";
 
-use p5;
+
 plan( tests => 64 );
 
 $aa = 1;
