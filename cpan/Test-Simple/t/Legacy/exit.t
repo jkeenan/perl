@@ -54,7 +54,7 @@ open my $fh, ">", "exit_map_test" or die $!;
 print $fh <<'DONE';
 if ($^O eq 'VMS') {
     require vmsish;
-    import vmsish qw(hushed);
+    vmsish->import( qw(hushed) );
 }
 my $exit = shift;
 print "exit $exit\n";
