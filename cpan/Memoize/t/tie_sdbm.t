@@ -29,7 +29,7 @@ if ($@) {
 
 print "1..4\n";
 
-$file = "md$$";
+my $file = "md$$";
 1 while unlink $file, "$file.dir", "$file.pag";
 if ( $^O eq 'VMS' ) {
     1 while unlink "$file.sdbm_dir";
