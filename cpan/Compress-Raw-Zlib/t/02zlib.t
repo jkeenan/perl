@@ -59,40 +59,40 @@ SKIP: {
 {
     title "Error Cases" ;
 
-    eval { new Compress::Raw::Zlib::Deflate(-Level) };
+    eval { Compress::Raw::Zlib::Deflate->new(-Level) };
     like $@,  mkErr("^Compress::Raw::Zlib::Deflate::new: Expected even number of parameters, got 1") ;
 
-    eval { new Compress::Raw::Zlib::Inflate(-Level) };
+    eval { Compress::Raw::Zlib::Inflate->new(-Level) };
     like $@, mkErr("^Compress::Raw::Zlib::Inflate::new: Expected even number of parameters, got 1");
 
-    eval { new Compress::Raw::Zlib::Deflate(-Joe => 1) };
+    eval { Compress::Raw::Zlib::Deflate->new(-Joe => 1) };
     like $@, mkErr('^Compress::Raw::Zlib::Deflate::new: unknown key value\(s\) Joe');
 
-    eval { new Compress::Raw::Zlib::Inflate(-Joe => 1) };
+    eval { Compress::Raw::Zlib::Inflate->new(-Joe => 1) };
     like $@, mkErr('^Compress::Raw::Zlib::Inflate::new: unknown key value\(s\) Joe');
 
-    eval { new Compress::Raw::Zlib::Deflate(-Bufsize => 0) };
+    eval { Compress::Raw::Zlib::Deflate->new(-Bufsize => 0) };
     like $@, mkErr("^Compress::Raw::Zlib::Deflate::new: Bufsize must be >= 1, you specified 0");
 
-    eval { new Compress::Raw::Zlib::Inflate(-Bufsize => 0) };
+    eval { Compress::Raw::Zlib::Inflate->new(-Bufsize => 0) };
     like $@, mkErr("^Compress::Raw::Zlib::Inflate::new: Bufsize must be >= 1, you specified 0");
 
-    eval { new Compress::Raw::Zlib::Deflate(-Bufsize => -1) };
+    eval { Compress::Raw::Zlib::Deflate->new(-Bufsize => -1) };
     like $@, mkErr("^Compress::Raw::Zlib::Deflate::new: Parameter 'Bufsize' must be an unsigned int, got '-1'");
 
-    eval { new Compress::Raw::Zlib::Inflate(-Bufsize => -1) };
+    eval { Compress::Raw::Zlib::Inflate->new(-Bufsize => -1) };
     like $@, mkErr("^Compress::Raw::Zlib::Inflate::new: Parameter 'Bufsize' must be an unsigned int, got '-1'");
 
-    eval { new Compress::Raw::Zlib::Deflate(-Bufsize => "xxx") };
+    eval { Compress::Raw::Zlib::Deflate->new(-Bufsize => "xxx") };
     like $@, mkErr("^Compress::Raw::Zlib::Deflate::new: Parameter 'Bufsize' must be an unsigned int, got 'xxx'");
 
-    eval { new Compress::Raw::Zlib::Inflate(-Bufsize => "xxx") };
+    eval { Compress::Raw::Zlib::Inflate->new(-Bufsize => "xxx") };
     like $@, mkErr("^Compress::Raw::Zlib::Inflate::new: Parameter 'Bufsize' must be an unsigned int, got 'xxx'");
 
-    eval { new Compress::Raw::Zlib::Inflate(-Bufsize => 1, 2) };
+    eval { Compress::Raw::Zlib::Inflate->new(-Bufsize => 1, 2) };
     like $@, mkErr("^Compress::Raw::Zlib::Inflate::new: Expected even number of parameters, got 3");
 
-    eval { new Compress::Raw::Zlib::Deflate(-Bufsize => 1, 2) };
+    eval { Compress::Raw::Zlib::Deflate->new(-Bufsize => 1, 2) };
     like $@, mkErr("^Compress::Raw::Zlib::Deflate::new: Expected even number of parameters, got 3");
 
 }
@@ -106,7 +106,7 @@ SKIP: {
     my @hello = split('', $hello) ;
     my ($err, $x, $X, $status); 
  
-    ok( ($x, $err) = new Compress::Raw::Zlib::Deflate ( -Bufsize => 1 ), "Create deflate object" );
+    ok( ($x, $err) = Compress::Raw::Zlib::Deflate->new( -Bufsize => 1 ), "Create deflate object" );
     ok $x, "Compress::Raw::Zlib::Deflate ok" ;
     cmp_ok $err, '==', Z_OK, "status is Z_OK" ;
  
@@ -135,8 +135,8 @@ SKIP: {
      
     my @Answer = split('', $Answer) ;
      
-    my $k;
-    ok(($k, $err) = new Compress::Raw::Zlib::Inflate( {-Bufsize => 1}) );
+    my ($k);
+    ok(($k, $err) = Compress::Raw::Zlib::Inflate->new( {-Bufsize => 1}) );
     ok $k, "Compress::Raw::Zlib::Inflate ok" ;
     cmp_ok $err, '==', Z_OK, "status is Z_OK" ;
  
@@ -169,7 +169,7 @@ SKIP: {
 
     my $hello = 6529 ;
  
-    ok  my ($x, $err) = new Compress::Raw::Zlib::Deflate ( -Bufsize => 1, -AppendOutput => 1 ) ;
+    ok  my ($x, $err) = Compress::Raw::Zlib::Deflate->new( -Bufsize => 1, -AppendOutput => 1 ) ;
     ok $x ;
     cmp_ok $err, '==', Z_OK ;
  
@@ -183,7 +183,7 @@ SKIP: {
     my @Answer = split('', $Answer) ;
      
     my $k;
-    ok(($k, $err) = new Compress::Raw::Zlib::Inflate( {-Bufsize => 1, -AppendOutput =>1}) );
+    ok(($k, $err) = Compress::Raw::Zlib::Inflate->new( {-Bufsize => 1, -AppendOutput =>1}) );
     ok $k ;
     cmp_ok $err, '==', Z_OK ;
      
@@ -212,7 +212,7 @@ SKIP: {
     my $hello = "I am a HAL 9000 computer" ;
     my @hello = split('', $hello) ;
      
-    ok  my ($x, $err) = new Compress::Raw::Zlib::Deflate ( {-Bufsize => 1, -AppendOutput =>1} ) ;
+    ok  my ($x, $err) = Compress::Raw::Zlib::Deflate->new( {-Bufsize => 1, -AppendOutput =>1} ) ;
     ok $x ;
     cmp_ok $err, '==', Z_OK ;
      
@@ -232,7 +232,7 @@ SKIP: {
     my @Answer = split('', $X) ;
      
     my $k;
-    ok(($k, $err) = new Compress::Raw::Zlib::Inflate( {-Bufsize => 1, -AppendOutput =>1}));
+    ok(($k, $err) = Compress::Raw::Zlib::Inflate->new( {-Bufsize => 1, -AppendOutput =>1}));
     ok $k ;
     cmp_ok $err, '==', Z_OK ;
      
@@ -260,7 +260,7 @@ SKIP: {
       { $contents .= chr int rand 255 }
     
     
-    ok my ($x, $err) = new Compress::Raw::Zlib::Deflate() ;
+    ok my ($x, $err) = Compress::Raw::Zlib::Deflate->new() ;
     ok $x ;
     cmp_ok $err, '==', Z_OK ;
      
@@ -282,7 +282,7 @@ SKIP: {
     my $keep = $Y ;
 
     my $k;
-    ok(($k, $err) = new Compress::Raw::Zlib::Inflate() );
+    ok(($k, $err) = Compress::Raw::Zlib::Inflate->new() );
     ok $k ;
     cmp_ok $err, '==', Z_OK ;
      
@@ -293,7 +293,7 @@ SKIP: {
 
     # redo deflate with AppendOutput
 
-    ok (($k, $err) = new Compress::Raw::Zlib::Inflate(-AppendOutput => 1)) ;
+    ok (($k, $err) = Compress::Raw::Zlib::Inflate->new(-AppendOutput => 1)) ;
     ok $k ;
     cmp_ok $err, '==', Z_OK ;
     
@@ -317,7 +317,7 @@ SKIP: {
     # ===================================
 
     my $dictionary = "hello" ;
-    ok my $x = new Compress::Raw::Zlib::Deflate({-Level => Z_BEST_COMPRESSION,
+    ok my $x = Compress::Raw::Zlib::Deflate->new({-Level => Z_BEST_COMPRESSION,
 			     -Dictionary => $dictionary}) ;
  
     my $dictID = $x->dict_adler() ;
@@ -327,7 +327,7 @@ SKIP: {
     cmp_ok $x->flush($Y), '==', Z_OK;
     $X .= $Y ;
  
-    ok my $k = new Compress::Raw::Zlib::Inflate(-Dictionary => $dictionary) ;
+    ok my $k = Compress::Raw::Zlib::Inflate->new(-Dictionary => $dictionary) ;
  
     cmp_ok $k->inflate($X, $Z), '==', Z_STREAM_END;
     is $k->dict_adler(), $dictID;
@@ -341,14 +341,14 @@ title 'inflate - check remaining buffer after Z_STREAM_END';
  
 for my $consume ( 0 .. 1)
 {
-    ok my $x = new Compress::Raw::Zlib::Deflate(-Level => Z_BEST_COMPRESSION ) ;
+    ok my $x = Compress::Raw::Zlib::Deflate->new(-Level => Z_BEST_COMPRESSION ) ;
  
     my ($X, $Y, $Z);
     cmp_ok $x->deflate($hello, $X), '==', Z_OK;
     cmp_ok $x->flush($Y), '==', Z_OK;
     $X .= $Y ;
  
-    ok my $k = new Compress::Raw::Zlib::Inflate( -ConsumeInput => $consume) ;
+    ok my $k = Compress::Raw::Zlib::Inflate->new( -ConsumeInput => $consume) ;
  
     my $first = substr($X, 0, 2) ;
     my $remember_first = $first ;
@@ -386,7 +386,7 @@ for my $consume ( 0 .. 1)
     my @hello = split('', $hello) ;
      
     ok  my ($x, $err) = 
-       new Compress::Raw::Zlib::Deflate ( -Bufsize => 1, 
+       Compress::Raw::Zlib::Deflate->new( -Bufsize => 1, 
                                      -WindowBits => -MAX_WBITS(),
                                      -AppendOutput => 1 ) ;
     ok $x ;
@@ -410,7 +410,7 @@ for my $consume ( 0 .. 1)
     push @Answer, " " ; 
      
     my $k;
-    ok(($k, $err) = new Compress::Raw::Zlib::Inflate( 
+    ok(($k, $err) = Compress::Raw::Zlib::Inflate->new( 
 			{-Bufsize => 1, 
 			-AppendOutput =>1,
 			-WindowBits => -MAX_WBITS()})) ;
@@ -445,7 +445,7 @@ SKIP:
     my $Answer ;
      
     #use Devel::Peek ;
-    ok(($x, $err) = new Compress::Raw::Zlib::Deflate(AppendOutput => 1)) ;
+    ok(($x, $err) = Compress::Raw::Zlib::Deflate->new(AppendOutput => 1)) ;
     ok $x ;
     cmp_ok $err, '==', Z_OK ;
      
@@ -464,7 +464,7 @@ SKIP:
     my ($first, @Answer) = split('', $Answer) ;
      
     my $k;
-    ok(($k, $err) = new Compress::Raw::Zlib::Inflate()) ;
+    ok(($k, $err) = Compress::Raw::Zlib::Inflate->new()) ;
     ok $k ;
     cmp_ok $err, '==', Z_OK ;
      
@@ -500,7 +500,7 @@ SKIP:
     my $initial = $1 ;
 
     
-    ok(($k, $err) = new Compress::Raw::Zlib::Inflate(ConsumeInput => 0)) ;
+    ok(($k, $err) = Compress::Raw::Zlib::Inflate->new(ConsumeInput => 0)) ;
     ok $k ;
     cmp_ok $err, '==', Z_OK ;
      
@@ -525,7 +525,7 @@ SKIP:
     my $goodbye = "Will I dream?" x 2010;
     my ($x, $input, $err, $answer, $X, $status, $Answer);
      
-    ok(($x, $err) = new Compress::Raw::Zlib::Deflate(
+    ok(($x, $err) = Compress::Raw::Zlib::Deflate->new(
                        -AppendOutput   => 1,
                        -Level    => Z_DEFAULT_COMPRESSION,
                        -Strategy => Z_DEFAULT_STRATEGY)) ;
@@ -595,7 +595,7 @@ SKIP:
     cmp_ok $x->flush($Answer), '==', Z_OK ;
      
     my $k;
-    ok(($k, $err) = new Compress::Raw::Zlib::Inflate()) ;
+    ok(($k, $err) = Compress::Raw::Zlib::Inflate->new()) ;
     ok $k ;
     cmp_ok $err, '==', Z_OK ;
      
@@ -610,7 +610,7 @@ SKIP:
 {
     title "ConsumeInput and a read-only buffer trapped" ;
 
-    ok my $k = new Compress::Raw::Zlib::Inflate(-ConsumeInput => 1) ;
+    ok my $k = Compress::Raw::Zlib::Inflate->new(-ConsumeInput => 1) ;
      
     my $Z; 
     eval { $k->inflate("abc", $Z) ; };
@@ -627,7 +627,7 @@ foreach (1 .. 2)
     my $contents = '' ;
     foreach (1 .. 5000)
       { $contents .= chr int rand 255 }
-    ok  my $x = new Compress::Raw::Zlib::Deflate(-AppendOutput => 1) ;
+    ok  my $x = Compress::Raw::Zlib::Deflate->new(-AppendOutput => 1) ;
      
     my $X ;
     my $status = $x->deflate(substr($contents,0), $X);
@@ -638,7 +638,7 @@ foreach (1 .. 2)
     my $append = "Appended" ;
     $X .= $append ;
      
-    ok my $k = new Compress::Raw::Zlib::Inflate(-AppendOutput => 1) ;
+    ok my $k = Compress::Raw::Zlib::Inflate->new(-AppendOutput => 1) ;
      
     my $Z; 
     my $keep = $X ;
@@ -661,7 +661,7 @@ foreach (1 .. 2)
     my @hello = split('', $hello) ;
     my ($err, $x, $X, $status); 
  
-    ok( ($x, $err) = new Compress::Raw::Zlib::Deflate ( -Bufsize => 1 ) );
+    ok( ($x, $err) = Compress::Raw::Zlib::Deflate->new( -Bufsize => 1 ) );
     ok $x ;
     cmp_ok $err, '==', Z_OK ;
  
@@ -683,7 +683,7 @@ foreach (1 .. 2)
     my @Answer = split('', $Answer) ;
      
     my $k;
-    ok(($k, $err) = new Compress::Raw::Zlib::Inflate(-AppendOutput => 1) );
+    ok(($k, $err) = Compress::Raw::Zlib::Inflate->new(-AppendOutput => 1) );
     ok $k ;
     cmp_ok $err, '==', Z_OK ;
  
@@ -710,7 +710,7 @@ if ($] >= 5.005)
 
     my($X, $Z);
 
-    ok my $x = new Compress::Raw::Zlib::Deflate ( -AppendOutput => 1 );
+    ok my $x = Compress::Raw::Zlib::Deflate->new( -AppendOutput => 1 );
 
     cmp_ok $x->deflate($data, $X), '==',  Z_OK ;
 
@@ -720,7 +720,7 @@ if ($] >= 5.005)
     $X .= $append ;
     my $keep = $X ;
      
-    ok my $k = new Compress::Raw::Zlib::Inflate ( -AppendOutput => 1,
+    ok my $k = Compress::Raw::Zlib::Inflate->new( -AppendOutput => 1,
                                              -ConsumeInput => 1 ) ;
      
     cmp_ok $k->inflate(substr($X, 0, -1), $Z), '==', Z_STREAM_END ; ;
@@ -730,7 +730,7 @@ if ($] >= 5.005)
     
     $X = $keep ;
     $Z = '';
-    ok $k = new Compress::Raw::Zlib::Inflate ( -AppendOutput => 1,
+    ok $k = Compress::Raw::Zlib::Inflate->new( -AppendOutput => 1,
                                           -ConsumeInput => 0 ) ;
      
     cmp_ok $k->inflate(substr($X, 0, -1), $Z), '==', Z_STREAM_END ; ;
@@ -765,7 +765,7 @@ SKIP:
     my @hello = split('', $hello) ;
     my ($err, $x, $X, $status); 
  
-    ok( ($x, $err) = new Compress::Raw::Zlib::Deflate ( 
+    ok( ($x, $err) = Compress::Raw::Zlib::Deflate->new( 
             WindowBits => WANT_GZIP ,
             AppendOutput => 1
         ), "Create deflate object" );
@@ -778,7 +778,7 @@ SKIP:
     cmp_ok  $x->flush($X), '==', Z_OK, "flush returned Z_OK" ;
      
     my ($k, $GOT); 
-    ($k, $err) = new Compress::Raw::Zlib::Inflate( 
+    ($k, $err) = Compress::Raw::Zlib::Inflate->new( 
             WindowBits => WANT_GZIP ,
             ConsumeInput => 0 ,
             AppendOutput => 1);
@@ -790,7 +790,7 @@ SKIP:
     is $GOT, $hello, "uncompressed data matches ok" ;
 
     $GOT = '';
-    ($k, $err) = new Compress::Raw::Zlib::Inflate( 
+    ($k, $err) = Compress::Raw::Zlib::Inflate->new( 
             WindowBits => WANT_GZIP_OR_ZLIB ,
             AppendOutput => 1);
     ok $k, "Compress::Raw::Zlib::Inflate WANT_GZIP_OR_ZLIB ok" ;
@@ -816,7 +816,7 @@ SKIP:
     my $hello = "I am a HAL 9000 computer" ;
     my ($err, $x, $X, $status); 
  
-    ok( ($x, $err) = new Compress::Raw::Zlib::Deflate ( 
+    ok( ($x, $err) = Compress::Raw::Zlib::Deflate->new( 
             WindowBits => WANT_GZIP ,
             AppendOutput => 1
         ), "Create deflate object" );
@@ -829,7 +829,7 @@ SKIP:
     cmp_ok  $x->flush($X), '==', Z_OK, "flush returned Z_OK" ;
      
     my ($k, $GOT); 
-    ($k, $err) = new Compress::Raw::Zlib::Inflate( 
+    ($k, $err) = Compress::Raw::Zlib::Inflate->new( 
             WindowBits => MAX_WBITS ,
             ConsumeInput => 0 ,
             AppendOutput => 1);
@@ -840,7 +840,7 @@ SKIP:
     cmp_ok $status, '==', Z_DATA_ERROR, "Got Z_DATA_ERROR" ;
 
     $GOT = '';
-    ($k, $err) = new Compress::Raw::Zlib::Inflate( 
+    ($k, $err) = Compress::Raw::Zlib::Inflate->new( 
             WindowBits => WANT_GZIP_OR_ZLIB ,
             AppendOutput => 1);
     ok $k, "Compress::Raw::Zlib::Inflate WANT_GZIP_OR_ZLIB ok" ;
@@ -865,7 +865,7 @@ SKIP:
     my $hello = "I am a HAL 9000 computer" ;
     my ($err, $x, $X, $status); 
  
-    ok( ($x, $err) = new Compress::Raw::Zlib::Deflate ( 
+    ok( ($x, $err) = Compress::Raw::Zlib::Deflate->new( 
             AppendOutput => 1
         ), "Create deflate object" );
     ok $x, "Compress::Raw::Zlib::Deflate ok" ;
@@ -877,7 +877,7 @@ SKIP:
     cmp_ok  $x->flush($X), '==', Z_OK, "flush returned Z_OK" ;
      
     my ($k, $GOT); 
-    ($k, $err) = new Compress::Raw::Zlib::Inflate( 
+    ($k, $err) = Compress::Raw::Zlib::Inflate->new( 
             WindowBits => WANT_GZIP ,
             ConsumeInput => 0 ,
             AppendOutput => 1);
@@ -888,7 +888,7 @@ SKIP:
     cmp_ok $status, '==', Z_DATA_ERROR, "Got Z_DATA_ERROR" ;
 
     $GOT = '';
-    ($k, $err) = new Compress::Raw::Zlib::Inflate( 
+    ($k, $err) = Compress::Raw::Zlib::Inflate->new( 
             WindowBits => WANT_GZIP_OR_ZLIB ,
             AppendOutput => 1);
     ok $k, "Compress::Raw::Zlib::Inflate WANT_GZIP_OR_ZLIB ok" ;
@@ -920,7 +920,7 @@ SKIP:
     my $hello = "I am a HAL 9000 computer" ;
     my ($err, $x, $X, $status); 
  
-    ok( ($x, $err) = new Compress::Raw::Zlib::Deflate ( ), "Create deflate object" );
+    ok( ($x, $err) = Compress::Raw::Zlib::Deflate->new( ), "Create deflate object" );
     isa_ok $x, "Compress::Raw::Zlib::deflateStream" ;
     cmp_ok $err, '==', Z_OK, "status is Z_OK" ;
  
@@ -938,7 +938,7 @@ SKIP:
     my $hello = "I am a HAL 9000 computer" ;
     my ($err, $x, $X, $status); 
  
-    ok( ($x, $err) = new Compress::Raw::Zlib::Deflate ( ), "Create deflate object" );
+    ok( ($x, $err) = Compress::Raw::Zlib::Deflate->new( ), "Create deflate object" );
     isa_ok $x, "Compress::Raw::Zlib::deflateStream" ;
     cmp_ok $err, '==', Z_OK, "status is Z_OK" ;
     
@@ -965,7 +965,7 @@ if (0)
     my $hello = "I am a HAL 9000 computer" ;
     my ($err, $x, $X, $status); 
  
-    ok( ($x, $err) = new Compress::Raw::Zlib::Deflate ( ), "Create deflate object" );
+    ok( ($x, $err) = Compress::Raw::Zlib::Deflate->new( ), "Create deflate object" );
     isa_ok $x, "Compress::Raw::Zlib::deflateStream" ;
     cmp_ok $err, '==', Z_OK, "status is Z_OK" ;
     
@@ -984,7 +984,7 @@ foreach (1 .. 2)
     my @hello = split('', $hello) ;
     my ($err, $x, $X, $status); 
  
-    ok( ($x, $err) = new Compress::Raw::Zlib::Deflate ( -Bufsize => 1,
+    ok( ($x, $err) = Compress::Raw::Zlib::Deflate->new( -Bufsize => 1,
                                             -AppendOutput => 1 ) );
     ok $x ;
     cmp_ok $err, '==', Z_OK ;
@@ -1008,7 +1008,7 @@ foreach (1 .. 2)
     
      
     my $k;
-    ok(($k, $err) = new Compress::Raw::Zlib::Inflate(-AppendOutput => 1) );
+    ok(($k, $err) = Compress::Raw::Zlib::Inflate->new(-AppendOutput => 1) );
     ok $k ;
     cmp_ok $err, '==', Z_OK ;
  
@@ -1034,7 +1034,7 @@ foreach (1 .. 2)
     my @hello = split('', $hello) ;
     my ($err, $x, $X, $status); 
  
-    ok( ($x, $err) = new Compress::Raw::Zlib::Deflate ( -Bufsize => 1,
+    ok( ($x, $err) = Compress::Raw::Zlib::Deflate->new( -Bufsize => 1,
                                             -AppendOutput => 1 ) );
     ok $x ;
     cmp_ok $err, '==', Z_OK ;
@@ -1055,7 +1055,7 @@ foreach (1 .. 2)
     my @Answer = split('', $Answer) ;
      
     my $k;
-    ok(($k, $err) = new Compress::Raw::Zlib::Inflate(-AppendOutput => 1) );
+    ok(($k, $err) = Compress::Raw::Zlib::Inflate->new(-AppendOutput => 1) );
     ok $k ;
     cmp_ok $err, '==', Z_OK ;
  
