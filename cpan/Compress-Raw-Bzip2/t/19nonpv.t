@@ -43,7 +43,7 @@ my $len   = length $hello ;
     $hello = *hello;
     my ($err, $x, $X, $status); 
  
-    ok( ($x, $err) = new Compress::Raw::Bzip2(0), "Create bzdeflate object" );
+    ok( ($x, $err) = Compress::Raw::Bzip2->new(0), "Create bzdeflate object" );
     ok $x, "Compress::Raw::Bzip2 ok" ;
     cmp_ok $err, '==', BZ_OK, "status is BZ_OK" ;
  
@@ -69,7 +69,7 @@ my $len   = length $hello ;
     my @Answer = split('', $Answer) ;
      
     my $k;
-    ok(($k, $err) = new Compress::Raw::Bunzip2(0, 0));
+    ok(($k, $err) = Compress::Raw::Bunzip2->new(0, 0));
     ok $k, "Compress::Raw::Bunzip2 ok" ;
     cmp_ok $err, '==', BZ_OK, "status is BZ_OK" ;
  
