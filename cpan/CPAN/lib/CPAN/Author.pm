@@ -2,7 +2,7 @@
 # vim: ts=4 sts=4 sw=4:
 package CPAN::Author;
 
-use p5;
+
 use strict;
 
 use CPAN::InfoObj;

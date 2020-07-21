@@ -1,6 +1,6 @@
 package Encode::Alias;
 
-use p5;
+
 
 use strict;
 use warnings;

@@ -6,7 +6,7 @@
 
 package Math::Trig;
 
-use p5;
+
 
 { use 5.006; }
 use strict;

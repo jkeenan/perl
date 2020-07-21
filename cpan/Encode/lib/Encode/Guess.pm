@@ -1,5 +1,5 @@
 package Encode::Guess;
-use p5;
+
 use strict;
 use warnings;
 use Encode qw(:fallbacks find_encoding);

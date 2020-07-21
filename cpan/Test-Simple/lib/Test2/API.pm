@@ -1,5 +1,5 @@
 package Test2::API;
-use p5;
+
 use strict;
 use warnings;
 

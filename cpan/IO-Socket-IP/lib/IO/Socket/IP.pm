@@ -4,7 +4,7 @@
 #  (C) Paul Evans, 2010-2015 -- leonerd@leonerd.org.uk
 
 package IO::Socket::IP;
-use p5;
+
 # $VERSION needs to be set before  use base 'IO::Socket'
 #  - https://rt.cpan.org/Ticket/Display.html?id=92107
 BEGIN {

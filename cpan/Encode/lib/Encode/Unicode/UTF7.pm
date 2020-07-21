@@ -3,7 +3,7 @@
 #
 package Encode::Unicode::UTF7;
 
-use p5;
+
 
 use strict;
 use warnings;

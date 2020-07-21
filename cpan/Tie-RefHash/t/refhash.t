@@ -23,7 +23,7 @@ BEGIN {
   }
 }    
 
-use p5;
+
 use strict;
 use Tie::RefHash;
 use Data::Dumper;

@@ -1,6 +1,6 @@
 package Memoize::Storable;
 
-use p5;
+
 
 =head1 NAME
 
