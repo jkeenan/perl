@@ -32,7 +32,7 @@ my $tmp = $hello ;
 
 my ($err, $x, $X, $status); 
 
-ok( ($x, $err) = new Compress::Raw::Bzip2 (1));
+ok( ($x, $err) = Compress::Raw::Bzip2->new (1));
 ok $x ;
 cmp_ok $err, '==', BZ_OK, "  status is BZ_OK" ;
 
@@ -44,7 +44,7 @@ cmp_ok $x->bzclose($out), '==', BZ_STREAM_END, "  bzflush returned BZ_STREAM_END
 
 {
     my $t = $out;
-    my $b = new Compress::Raw::Bunzip2(0,0);
+    my $b = Compress::Raw::Bunzip2->new(0,0);
 
     my $GOT;
     my $status = $b->bzinflate($t, $GOT) ;
@@ -61,7 +61,7 @@ for my $bufsize (1, 2, 3, 13, 4096, 1024*10)
     $tmp = $out;
 
     my $k;
-    ok(($k, $err) = new Compress::Raw::Bunzip2( 1,1,0,0,1
+    ok(($k, $err) = Compress::Raw::Bunzip2->new( 1,1,0,0,1
                                                       #AppendOutput => 1,
                                                       #LimitOutput => 1,
                                                       #Bufsize => $bufsize
@@ -109,7 +109,7 @@ sub getit
     
     my ($err, $x, $X, $status); 
     
-    ok( ($x, $err) = new Compress::Raw::Bzip2 (1));
+    ok( ($x, $err) = Compress::Raw::Bzip2->new (1));
     ok $x ;
     cmp_ok $err, '==', BZ_OK, "  status is BZ_OK" ;
 
@@ -125,7 +125,7 @@ sub getit
     cmp_ok $x->bzclose($out), '==', BZ_STREAM_END, "  bzclose returned BZ_STREAM_END" ;
 
     my $k;
-    ok(($k, $err) = new Compress::Raw::Bunzip2( 1,1,0,0,1
+    ok(($k, $err) = Compress::Raw::Bunzip2->new( 1,1,0,0,1
             #AppendOutput => 1,
             #LimitOutput => 1
                                                     ));

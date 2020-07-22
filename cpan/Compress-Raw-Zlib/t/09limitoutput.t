@@ -32,7 +32,7 @@ my $tmp = $hello ;
 
 my ($err, $x, $X, $status); 
 
-ok( ($x, $err) = new Compress::Raw::Zlib::Deflate (-AppendOutput => 1));
+ok( ($x, $err) = Compress::Raw::Zlib::Deflate->new(-AppendOutput => 1));
 ok $x ;
 cmp_ok $err, '==', Z_OK, "  status is Z_OK" ;
 
@@ -51,7 +51,7 @@ for my $bufsize (1, 2, 3, 13, 4096, 1024*10)
     $tmp = $out;
 
     my $k;
-    ok(($k, $err) = new Compress::Raw::Zlib::Inflate( AppendOutput => 1,
+    ok(($k, $err) = Compress::Raw::Zlib::Inflate->new( AppendOutput => 1,
                                                       LimitOutput => 1,
                                                       Bufsize => $bufsize
                                                     ));
@@ -100,7 +100,7 @@ sub getit
     
     my ($err, $x, $X, $status); 
     
-    ok( ($x, $err) = new Compress::Raw::Zlib::Deflate (-AppendOutput => 1));
+    ok( ($x, $err) = Compress::Raw::Zlib::Deflate->new(-AppendOutput => 1));
     ok $x ;
     cmp_ok $err, '==', Z_OK, "  status is Z_OK" ;
 
@@ -116,7 +116,7 @@ sub getit
     cmp_ok $x->flush($out), '==', Z_OK, "  flush returned Z_OK" ;
 
     my $k;
-    ok(($k, $err) = new Compress::Raw::Zlib::Inflate( AppendOutput => 1,
+    ok(($k, $err) = Compress::Raw::Zlib::Inflate->new( AppendOutput => 1,
                                                       LimitOutput => 1
                                                     ));
 

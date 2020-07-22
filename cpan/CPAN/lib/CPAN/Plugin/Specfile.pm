@@ -53,7 +53,7 @@ Andreas Koenig <andk@cpan.org>, Branislav Zahradnik <barney@cpan.org>
 
 package CPAN::Plugin::Specfile;
 
-use p5;
+
 
 our $VERSION = '0.02';
 

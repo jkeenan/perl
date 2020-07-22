@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use p5;
+
 use lib '..';
 use Memoize;
 
@@ -13,6 +13,7 @@ $| = 1;
 # If we don't say anything, maybe nobody will notice.
 # print STDERR "\nWarning: I'm testing the speedup.  This might take up to thirty seconds.\n                    ";
 
+my $COUNT;
 my $COARSE_TIME = 1;
 
 sub times_to_time { my ($u) = times; $u; }
@@ -53,14 +54,15 @@ sub max { $_[0] > $_[1] ?
           $_[0] : $_[1] 
         }
 
-$N = 1;
+my $N = 1;
 
-$ELAPSED = 0;
+my $ELAPSED = 0;
 
 my $LONG_RUN = 11;
+my ($start, $RESULT);
 
 while (1) {
-  my $start = time;
+  $start = time;
   $COUNT=0;
   $RESULT = fib($N);
   $ELAPSED = time - $start;
@@ -87,8 +89,8 @@ print "# Total calls: $COUNT.\n";
 
 $COUNT=0;
 $start = time;
-$RESULT2 = fib($N);
-$ELAPSED2 = time - $start + .001; # prevent division by 0 errors
+my $RESULT2 = fib($N);
+my $ELAPSED2 = time - $start + .001; # prevent division by 0 errors
 print (($RESULT == $RESULT2) ? "ok 1\n" : "not ok 1\n");
 # If it's not ten times as fast, something is seriously wrong.
 print "# ELAPSED2=$ELAPSED2 seconds.\n";

@@ -1,5 +1,5 @@
 package ExtUtils::Install;
-use p5;
+
 use strict;
 
 use Config qw(%Config);

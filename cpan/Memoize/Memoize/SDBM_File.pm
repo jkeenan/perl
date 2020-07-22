@@ -1,6 +1,6 @@
 package Memoize::SDBM_File;
 
-use p5;
+
 
 =head1 NAME
 

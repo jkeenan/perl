@@ -1,5 +1,5 @@
 package Sys::Syslog;
-use p5;
+
 use strict;
 use warnings;
 use warnings::register;

@@ -23,7 +23,7 @@ BEGIN {
   }
 }    
 
-use p5;
+
 use strict;
 use Tie::RefHash;
 use Data::Dumper;
@@ -57,10 +57,12 @@ foreach my $class ('Tie::RefHash', 'Tie::RefHash::Nestable') {
         my ($tr, $tw, $te) = @{$tied_results[$i]};
         
         my $ok = 1;
-        local $^W = 0;
-        $ok = 0 if (defined($or) != defined($tr)) or ($or ne $tr);
-        $ok = 0 if (defined($ow) != defined($tw)) or ($ow ne $tw);
-        $ok = 0 if (defined($oe) != defined($te)) or ($oe ne $te);
+        {
+            no warnings 'uninitialized';
+            $ok = 0 if (defined($or) != defined($tr)) or ($or ne $tr);
+            $ok = 0 if (defined($ow) != defined($tw)) or ($ow ne $tw);
+            $ok = 0 if (defined($oe) != defined($te)) or ($oe ne $te);
+        }
         
         if (not $ok) {
             print STDERR

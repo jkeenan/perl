@@ -48,7 +48,7 @@ SKIP: {
 
     my $dictionary = *hello ;
 
-    ok my $x = new Compress::Raw::Zlib::Deflate({-Level => Z_BEST_COMPRESSION,
+    ok my $x = Compress::Raw::Zlib::Deflate->new({-Level => Z_BEST_COMPRESSION,
 			     -Dictionary => $dictionary}) ;
  
     my $dictID = $x->dict_adler() ;
@@ -58,7 +58,7 @@ SKIP: {
     cmp_ok $x->flush($Y), '==', Z_OK;
     $X .= $Y ;
  
-    ok my $k = new Compress::Raw::Zlib::Inflate(-Dictionary => $dictionary) ;
+    ok my $k = Compress::Raw::Zlib::Inflate->new(-Dictionary => $dictionary) ;
  
     cmp_ok $k->inflate($X, $Z), '==', Z_STREAM_END;
     is $k->dict_adler(), $dictID;
@@ -74,7 +74,7 @@ SKIP: {
     my $hello = *hello ;
     my ($err, $x, $X, $status); 
  
-    ok( ($x, $err) = new Compress::Raw::Zlib::Deflate, "Create deflate object" );
+    ok( ($x, $err) = Compress::Raw::Zlib::Deflate->new(), "Create deflate object" );
     ok $x, "Compress::Raw::Zlib::Deflate ok" ;
     cmp_ok $err, '==', Z_OK, "status is Z_OK" ;
  
@@ -98,7 +98,7 @@ SKIP: {
     is $x->total_out(), length $Answer, "total_out ok" ;
      
     my $k;
-    ok(($k, $err) = new Compress::Raw::Zlib::Inflate);
+    ok(($k, $err) = Compress::Raw::Zlib::Inflate->new());
     ok $k, "Compress::Raw::Zlib::Inflate ok" ;
     cmp_ok $err, '==', Z_OK, "status is Z_OK" ;
  
@@ -119,7 +119,7 @@ SKIP: {
     is $k->total_out(), length $hello , "total_out ok";
 
 
-    ok(($k, $err) = new Compress::Raw::Zlib::Inflate);
+    ok(($k, $err) = Compress::Raw::Zlib::Inflate->new());
     ok $k, "Compress::Raw::Zlib::Inflate ok" ;
     cmp_ok $err, '==', Z_OK, "status is Z_OK" ;
 

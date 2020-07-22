@@ -10,7 +10,7 @@
 
 package Memoize;
 
-use p5;
+
 
 $VERSION = '1.03_01';
 

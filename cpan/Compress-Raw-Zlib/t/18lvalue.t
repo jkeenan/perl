@@ -57,7 +57,7 @@ SKIP: {
     sub getX    : lvalue { $X }
     sub getZ    : lvalue { $Z }
 
-    ok my $x = new Compress::Raw::Zlib::Deflate ( -AppendOutput => 1 );
+    ok my $x = Compress::Raw::Zlib::Deflate->new( -AppendOutput => 1 );
 
     cmp_ok $x->deflate(getData, getX), '==',  Z_OK ;
 
@@ -66,7 +66,7 @@ SKIP: {
     my $append = "Appended" ;
     $X .= $append ;
      
-    ok my $k = new Compress::Raw::Zlib::Inflate ( -AppendOutput => 1 ) ;
+    ok my $k = Compress::Raw::Zlib::Inflate->new( -AppendOutput => 1 ) ;
      
     cmp_ok $k->inflate(getX, getZ), '==', Z_STREAM_END ; ;
      

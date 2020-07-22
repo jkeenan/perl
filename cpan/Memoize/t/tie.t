@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use p5;
+
 use lib qw(. ..);
 use Memoize 0.52 qw(memoize unmemoize);
 use Fcntl;
@@ -18,7 +18,7 @@ sub i {
   $_[0];
 }
 
-$ARG = 'Keith Bostic is a pinhead';
+my $ARG = 'Keith Bostic is a pinhead';
 
 sub c119 { 119 }
 sub c7 { 7 }
@@ -30,8 +30,8 @@ sub n {
   $_[0]+1;
 }
 
-$file = "md$$";
-@files = ($file, "$file.db", "$file.dir", "$file.pag");
+my $file = "md$$";
+my @files = ($file, "$file.db", "$file.dir", "$file.pag");
 1 while unlink @files;
 
 
@@ -75,7 +75,8 @@ sub tryout {
 
 { 
   my @present = grep -e, @files;
-  if (@present && (@failed = grep { not unlink } @present)) {
+  if (@present && (my @failed = grep { not unlink } @present)) {
+    no warnings 'ambiguous';
     warn "Can't unlink @failed!  ($!)";
   }
 }

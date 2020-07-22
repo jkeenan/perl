@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use p5;
+
 use lib '..';
 use Memoize qw(memoize unmemoize);
 

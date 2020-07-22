@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use p5;
+
 use lib '..';
 use Memoize;
 
@@ -25,21 +25,22 @@ my $a_normal =  memoize('a1', INSTALL => undef);
 my $a_nomemo =  memoize('a2', INSTALL => undef, NORMALIZER => 'n_diff');
 my $a_allmemo = memoize('a3', INSTALL => undef, NORMALIZER => 'n_null');
 
-@ARGS = (1, 2, 3, 2, 1);
+my @ARGS = (1, 2, 3, 2, 1);
 
-@res  = map { &$a_normal($_) } @ARGS;
-print ((("@res" eq "1-1 2-2 3-3 2-2 1-1") ? '' : 'not '), "ok 1\n");
+my @res  = map { &$a_normal($_) } @ARGS;
+{
+    no warnings 'ambiguous';
+    print ((("@res" eq "1-1 2-2 3-3 2-2 1-1") ? '' : 'not '), "ok 1\n");
 
-@res  = map { &$a_nomemo($_) } @ARGS;
-print ((("@res" eq "1-1 2-2 3-3 2-4 1-5") ? '' : 'not '), "ok 2\n");
+    @res  = map { &$a_nomemo($_) } @ARGS;
+    print ((("@res" eq "1-1 2-2 3-3 2-4 1-5") ? '' : 'not '), "ok 2\n");
 
-@res = map { &$a_allmemo($_) } @ARGS;
-print ((("@res" eq "1-1 1-1 1-1 1-1 1-1") ? '' : 'not '), "ok 3\n");
+    @res = map { &$a_allmemo($_) } @ARGS;
+    print ((("@res" eq "1-1 1-1 1-1 1-1 1-1") ? '' : 'not '), "ok 3\n");
+}
 
-		
-       
 # Test fully-qualified name and installation
-$COUNT = 0;
+my $COUNT = 0;
 sub parity { $COUNT++; $_[0] % 2 }
 sub parnorm { $_[0] % 2 }
 memoize('parity', NORMALIZER =>  'main::parnorm');

@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use p5;
+
 use lib '..';
 use Memoize 'memoize', 'unmemoize';
 use Test::More;
@@ -21,8 +21,8 @@ plan tests => 7;
 memoize 'reff', LIST_CACHE => 'MERGE';
 memoize 'listf';
 
-$s = reff();
-@a = reff();
+my $s = reff();
+my @a = reff();
 is(scalar(@a), 1, "reff list context");
 
 $s = listf();

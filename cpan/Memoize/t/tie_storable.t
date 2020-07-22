@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # -*- mode: perl; perl-indent-level: 2 -*-
 
-use p5;
+
 use lib qw(. ..);
 use Memoize 0.45 qw(memoize unmemoize);
 # $Memoize::Storable::Verbose = 0;
@@ -34,7 +34,7 @@ if ($@) {
 
 print "1..4\n";
 
-$file = "storable$$";
+my $file = "storable$$";
 1 while unlink $file;
 tryout('Memoize::Storable', $file, 1);  # Test 1..4
 1 while unlink $file;
