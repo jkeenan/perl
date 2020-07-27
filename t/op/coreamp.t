@@ -7,6 +7,7 @@
 
 # Other tests for CORE subs are in coresubs.t
 
+our $tests = 0;
 BEGIN {
     chdir 't' if -d 't';
     require "./test.pl"; require './charset_tools.pl';
@@ -52,7 +53,7 @@ sub test_proto {
   my($o) = shift;
 
   # Create an alias, for the caller’s convenience.
-  *{"my$o"} = \&{"CORE::$o"};
+  { no strict 'refs'; *{"my$o"} = \&{"CORE::$o"}; }
 
   my $p = prototype "CORE::$o";
   $p = '$;$' if $p eq '$_';
@@ -81,11 +82,11 @@ sub test_proto {
     # Since we have $in and $out values, we might as well test basic amper-
     # sand calls, too.
 
-    is &{"CORE::$o"}($in), $out, "&$o";
-    lis [&{"CORE::$o"}($in)], [$out], "&$o in list context";
+    { no strict 'refs'; is &{"CORE::$o"}($in), $out, "&$o"; }
+    { no strict 'refs'; lis [&{"CORE::$o"}($in)], [$out], "&$o in list context"; }
 
     $_ = $in;
-    is &{"CORE::$o"}(), $out, "&$o with no args";
+    { no strict 'refs'; is &{"CORE::$o"}(), $out, "&$o with no args"; }
   }
   elsif ($p =~ '^;([$*]+)\z') { # ;$ ;* ;$$ etc.
     my $maxargs = length $1;
@@ -361,7 +362,7 @@ test_proto 'binmode';
 $tests += 3;
 is &CORE::binmode(qw[foo bar]), undef, "&binmode";
 lis [&CORE::binmode(qw[foo bar])], [undef], "&binmode in list context";
-is &mybinmode(foo), undef, '&binmode with one arg';
+{no strict 'subs'; is &mybinmode(foo), undef, '&binmode with one arg'; }
 
 test_proto 'bless';
 $tests += 3;
@@ -446,8 +447,11 @@ lis [&CORE::close('tototootot')], [''], '&close in list context'; ++$tests;
 
 test_proto 'closedir';
 $tests += 2;
-is &CORE::closedir(foo), undef, '&CORE::closedir';
-lis [&CORE::closedir(foo)], [undef], '&CORE::closedir in list context';
+{
+    no strict 'subs';
+    is &CORE::closedir(foo), undef, '&CORE::closedir';
+    lis [&CORE::closedir(foo)], [undef], '&CORE::closedir in list context';
+}
 
 test_proto 'connect';
 $tests += 2;
@@ -662,6 +666,7 @@ pass '&localtime without args does not crash'; ++$tests;
 
 test_proto 'lock';
 $tests += 6;
+my ($foo, $file, @foo, %foo);
 is \&mylock(\$foo), \$foo, '&lock retval when passed a scalar ref';
 lis [\&mylock(\$foo)], [\$foo], '&lock in list context';
 is &mylock(\@foo), \@foo, '&lock retval when passed an array ref';
@@ -686,7 +691,7 @@ test_proto 'oct', '666', 438;
 test_proto 'open';
 $tests += 5;
 $file = 'test.pl';
-ok &myopen('file'), '&open with 1 arg' or warn "1-arg open: $!";
+{ no strict 'refs'; ok &myopen('file'), '&open with 1 arg' or warn "1-arg open: $!"; }
 like <file>, qr|^#|, 'result of &open with 1 arg';
 close file;
 {
@@ -808,20 +813,22 @@ END
 test_proto 'readlink';
 test_proto 'readpipe';
 test_proto 'recv';
-
-use if !is_miniperl, File::Spec::Functions, qw "catfile";
-use if !is_miniperl, File::Temp, 'tempdir';
-
-test_proto 'rename';
 {
-    last if is_miniperl;
-    $tests ++;
-    my $dir = tempdir(uc cleanup => 1);
-    my $tmpfilenam = catfile $dir, 'aaa';
-    open my $fh, ">", $tmpfilenam or die "cannot open $tmpfilenam: $!";
-    close $fh or die "cannot close $tmpfilenam: $!";
-    &myrename("$tmpfilenam", $tmpfilenam = catfile $dir,'bbb');
-    ok open(my $fh, '>', $tmpfilenam), '&rename';
+    no strict 'subs';
+    use if !is_miniperl, File::Spec::Functions, qw "catfile";
+    use if !is_miniperl, File::Temp, 'tempdir';
+    
+    test_proto 'rename';
+    {
+        last if is_miniperl;
+        $tests ++;
+        my $dir = tempdir(uc cleanup => 1);
+        my $tmpfilenam = catfile $dir, 'aaa';
+        open my $fh, ">", $tmpfilenam or die "cannot open $tmpfilenam: $!";
+        close $fh or die "cannot close $tmpfilenam: $!";
+        &myrename("$tmpfilenam", $tmpfilenam = catfile $dir,'bbb');
+        ok open(my $fh, '>', $tmpfilenam), '&rename';
+    }
 }
 
 test_proto 'ref', [], 'ARRAY';
@@ -833,10 +840,10 @@ my $oncer = sub { "a" =~ m?a? };
 &myreset;
 ok &$oncer, '&reset with no args';
 package resettest {
-  $b = "c";
-  $banana = "cream";
+  my $beta = "c";
+  my $banana = "cream";
   &::myreset('b');
-  ::lis [$b,$banana],[(undef)x2], '1-arg &reset';
+  ::lis [$beta,$banana],[(undef)x2], '1-arg &reset';
 }
 
 test_proto 'reverse';
@@ -1112,7 +1119,7 @@ test_proto 'vec';
 $tests += 3;
 is &myvec("foo", 0, 4), 6, '&vec';
 lis [&myvec("foo", 0, 4)], [6], '&vec in list context';
-$tmp = "foo";
+my $tmp = "foo";
 ++&myvec($tmp,0,4);
 is $tmp, "goo", 'lvalue &vec';
 
