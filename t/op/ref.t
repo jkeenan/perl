@@ -6,7 +6,11 @@ BEGIN {
     set_up_inc( qw(. ../lib) );
 }
 
-use strict qw(refs subs);
+# Because this file will be testing a lot of global variables, typeglobs,
+# etc., it makes sense to relax strict 'vars', implicitly allowing 'refs' and
+# 'subs' except where indicated otherwise.
+
+no strict 'vars';
 
 plan(254);
 
@@ -14,36 +18,39 @@ plan(254);
 # This caused an asan failure due to a bad write past the end of the stack.
 eval { die  1..127, $_=\() };
 
-# Test glob operations.
-
-$bar = "one";
-$foo = "two";
 {
-    local(*foo) = *bar;
-    is($foo, 'one');
+    note("Test glob operations");
+    
+    $bar = "one";
+    $foo = "two";
+    {
+        local(*foo) = *bar;
+        is($foo, 'one');
+    }
+    is ($foo, 'two');
+    
+    $baz = "three";
+    $foo = "four";
+    {
+        local(*foo) = 'baz';
+        is ($foo, 'three');
+    }
+    is ($foo, 'four');
+    
+    $foo = "global";
+    {
+        local(*foo);
+        is ($foo, undef);
+        $foo = "local";
+        is ($foo, 'local');
+    }
+    is ($foo, 'global');
 }
-is ($foo, 'two');
-
-$baz = "three";
-$foo = "four";
-{
-    local(*foo) = 'baz';
-    is ($foo, 'three');
-}
-is ($foo, 'four');
-
-$foo = "global";
-{
-    local(*foo);
-    is ($foo, undef);
-    $foo = "local";
-    is ($foo, 'local');
-}
-is ($foo, 'global');
 
 {
+    note("Test fake references");
+
     no strict 'refs';
-# Test fake references.
 
     $baz = "valid";
     $bar = 'baz';
@@ -51,86 +58,92 @@ is ($foo, 'global');
     is ($$$foo, 'valid');
 }
 
-# Test real references.
-
-$FOO = \$BAR;
-$BAR = \$BAZ;
-$BAZ = "hit";
-is ($$$FOO, 'hit');
-
-# Test references to real arrays.
-
-my $test = curr_test();
-@ary = ($test,$test+1,$test+2,$test+3);
-$ref[0] = \@a;
-$ref[1] = \@b;
-$ref[2] = \@c;
-$ref[3] = \@d;
-for $i (3,1,2,0) {
-    push(@{$ref[$i]}, "ok $ary[$i]\n");
-}
-print @a;
-print ${$ref[1]}[0];
-print @{$ref[2]}[0];
 {
-    no strict 'refs';
-    print @{'d'};
+    note("Test real references");
+
+    $FOO = \$BAR;
+    $BAR = \$BAZ;
+    $BAZ = "hit";
+    is ($$$FOO, 'hit');
+}
+{
+    note("Test references to real arrays");
+
+    my $test = curr_test();
+    my @ary = ($test,$test+1,$test+2,$test+3);
+    $ref[0] = \@a;
+    $ref[1] = \@b;
+    $ref[2] = \@c;
+    $ref[3] = \@d;
+    for my $i (3,1,2,0) {
+        push(@{$ref[$i]}, "ok $ary[$i]\n");
+    }
+    print @a;
+    print ${$ref[1]}[0];
+    print @{$ref[2]}[0];
+    {
+        no strict 'refs';
+        print @{'d'};
+    }
 }
 curr_test($test+4);
 
-# Test references to references.
-
-$refref = \\$x;
-$x = "Good";
-is ($$$refref, 'Good');
-
-# Test nested anonymous arrays.
-
-$ref = [[],2,[3,4,5,]];
-is (scalar @$ref, 3);
-is ($$ref[1], 2);
-is (${$$ref[2]}[2], 5);
-is (scalar @{$$ref[0]}, 0);
-
-is ($ref->[1], 2);
-is ($ref->[2]->[0], 3);
-
-# Test references to hashes of references.
-
-$refref = \%whatever;
-$refref->{"key"} = $ref;
-is ($refref->{"key"}->[2]->[0], 3);
-
-# Test to see if anonymous subarrays spring into existence.
-
-$spring[5]->[0] = 123;
-$spring[5]->[1] = 456;
-push(@{$spring[5]}, 789);
-is (join(':',@{$spring[5]}), "123:456:789");
-
-# Test to see if anonymous subhashes spring into existence.
-
-@{$spring2{"foo"}} = (1,2,3);
-$spring2{"foo"}->[3] = 4;
-is (join(':',@{$spring2{"foo"}}), "1:2:3:4");
-
-# Test references to subroutines.
+{
+    $refref = \\$x;
+    $x = "Good";
+    is ($$$refref, 'Good', "Reference to a reference has expected value");
+}
 
 {
+    note("Test nested anonymous arrays");
+    
+    $ref = [[],2,[3,4,5,]];
+    is (scalar @$ref, 3);
+    is ($$ref[1], 2);
+    is (${$$ref[2]}[2], 5);
+    is (scalar @{$$ref[0]}, 0);
+    
+    is ($ref->[1], 2);
+    is ($ref->[2]->[0], 3);
+    
+    $refref = \%whatever;
+    $refref->{"key"} = $ref;
+    is ($refref->{"key"}->[2]->[0], 3,
+        "Test references to hashes of references");
+}
+
+{
+    $spring[5]->[0] = 123;
+    $spring[5]->[1] = 456;
+    push(@{$spring[5]}, 789);
+    is (join(':',@{$spring[5]}), "123:456:789",
+        "Anonymous subarrays spring into existence");
+}
+
+{
+    @{$spring2{"foo"}} = (1,2,3);
+    $spring2{"foo"}->[3] = 4;
+    is (join(':',@{$spring2{"foo"}}), "1:2:3:4",
+        "Anonymous subhashes spring into existence");
+}
+
+
+{
+    note("Test references to subroutines");
+
     my $called;
     sub mysub { $called++; }
     $subref = \&mysub;
     &$subref;
     is ($called, 1);
+    is ref eval {\&{""}}, "CODE", 'reference to &{""} [perl #94476]';
+    delete $My::{"Foo::"}; 
+    is ref \&My::Foo::foo, "CODE",
+      'creating stub with \&deleted_stash::foo [perl #128532]';
 }
-is ref eval {\&{""}}, "CODE", 'reference to &{""} [perl #94476]';
-delete $My::{"Foo::"}; 
-is ref \&My::Foo::foo, "CODE",
-  'creating stub with \&deleted_stash::foo [perl #128532]';
 
-
-# Test references to return values of operators (TARGs/PADTMPs)
 {
+    note("Test references to return values of operators (TARGs/PADTMPs");
     my @refs;
     for("a", "b") {
         push @refs, \"$_"
@@ -138,14 +151,18 @@ is ref \&My::Foo::foo, "CODE",
     is join(" ", map $$_, @refs), "a b", 'refgen+PADTMP';
 }
 
-$subrefref = \\&mysub2;
-is ($$subrefref->("GOOD"), "good");
-sub mysub2 { lc shift }
-
-# Test REGEXP assignment
+{
+    $subrefref = \\&mysub2;
+    is ($$subrefref->("GOOD"), "good",
+        "Dereferencing a subroutine reference returned expected value");
+    sub mysub2 { lc shift }
+}
 
 SKIP: {
     skip_if_miniperl("no dynamic loading on miniperl, so can't load re", 5);
+
+    note("Test REGEXP assignment");
+
     require re;
     my $x = qr/x/;
     my $str = "$x"; # regex stringification may change
@@ -159,6 +176,7 @@ SKIP: {
     is ($z, $str, "new ref to REGEXP stringifies correctly");
     ok (eval { "x" =~ $z }, "new ref to REGEXP matches correctly");
 }
+
 {
     my ($x, $str);
     {
@@ -170,50 +188,54 @@ SKIP: {
     ok (eval { "x" =~ $x }, "REGEXP with mother_re still matches");
 }
 
-# Test the ref operator.
-
-sub PVBM () { 'foo' }
-{ my $dummy = index 'foo', PVBM }
-
-my $pviv = 1; "$pviv";
-my $pvnv = 1.0; "$pvnv";
-my $x;
-
-# we don't test
-#   tied lvalue => SCALAR, as we haven't tested tie yet
-#   BIND, 'cos we can't create them yet
-#   REGEXP, 'cos that requires overload or Scalar::Util
-
-for (
-    [ 'undef',          SCALAR  => \undef               ],
-    [ 'constant IV',    SCALAR  => \1                   ],
-    [ 'constant NV',    SCALAR  => \1.0                 ],
-    [ 'constant PV',    SCALAR  => \'f'                 ],
-    [ 'scalar',         SCALAR  => \$x                  ],
-    [ 'PVIV',           SCALAR  => \$pviv               ],
-    [ 'PVNV',           SCALAR  => \$pvnv               ],
-    [ 'PVMG',           SCALAR  => \$0                  ],
-    [ 'PVBM',           SCALAR  => \PVBM                ],
-    [ 'scalar @array',  SCALAR  => \scalar @array       ],
-    [ 'scalar %hash',   SCALAR  => \scalar %hash        ],
-    [ 'vstring',        VSTRING => \v1                  ],
-    [ 'ref',            REF     => \\1                  ],
-    [ 'substr lvalue',  LVALUE  => \substr($x, 0, 0)    ],
-    [ 'pos lvalue',     LVALUE  => \pos                 ],
-    [ 'vec lvalue',     LVALUE  => \vec($x,0,1)         ],     
-    [ 'named array',    ARRAY   => \@ary                ],
-    [ 'anon array',     ARRAY   => [ 1 ]                ],
-    [ 'named hash',     HASH    => \%whatever           ],
-    [ 'anon hash',      HASH    => { a => 1 }           ],
-    [ 'named sub',      CODE    => \&mysub,             ],
-    [ 'anon sub',       CODE    => sub { 1; }           ],
-    [ 'glob',           GLOB    => \*foo                ],
-    [ 'format',         FORMAT  => *STDERR{FORMAT}      ],
-) {
-    my ($desc, $type, $ref) = @$_;
-    is (ref $ref, $type, "ref() for ref to $desc");
-    like ("$ref", qr/^$type\(0x[0-9a-f]+\)$/, "stringify for ref to $desc");
+{
+    note("Test the ref operator");
+    
+    sub PVBM () { 'foo' }
+    { my $dummy = index 'foo', PVBM }
+    
+    my $pviv = 1; "$pviv";
+    my $pvnv = 1.0; "$pvnv";
+    my $x;
+    
+    # we don't test
+    #   tied lvalue => SCALAR, as we haven't tested tie yet
+    #   BIND, 'cos we can't create them yet
+    #   REGEXP, 'cos that requires overload or Scalar::Util
+    
+    for (
+        [ 'undef',          SCALAR  => \undef               ],
+        [ 'constant IV',    SCALAR  => \1                   ],
+        [ 'constant NV',    SCALAR  => \1.0                 ],
+        [ 'constant PV',    SCALAR  => \'f'                 ],
+        [ 'scalar',         SCALAR  => \$x                  ],
+        [ 'PVIV',           SCALAR  => \$pviv               ],
+        [ 'PVNV',           SCALAR  => \$pvnv               ],
+        [ 'PVMG',           SCALAR  => \$0                  ],
+        [ 'PVBM',           SCALAR  => \PVBM                ],
+        [ 'scalar @array',  SCALAR  => \scalar @array       ],
+        [ 'scalar %hash',   SCALAR  => \scalar %hash        ],
+        [ 'vstring',        VSTRING => \v1                  ],
+        [ 'ref',            REF     => \\1                  ],
+        [ 'substr lvalue',  LVALUE  => \substr($x, 0, 0)    ],
+        [ 'pos lvalue',     LVALUE  => \pos                 ],
+        [ 'vec lvalue',     LVALUE  => \vec($x,0,1)         ],     
+        [ 'named array',    ARRAY   => \@ary                ],
+        [ 'anon array',     ARRAY   => [ 1 ]                ],
+        [ 'named hash',     HASH    => \%whatever           ],
+        [ 'anon hash',      HASH    => { a => 1 }           ],
+        [ 'named sub',      CODE    => \&mysub,             ],
+        [ 'anon sub',       CODE    => sub { 1; }           ],
+        [ 'glob',           GLOB    => \*foo                ],
+        [ 'format',         FORMAT  => *STDERR{FORMAT}      ],
+    ) {
+        my ($desc, $type, $ref) = @$_;
+        is (ref $ref, $type, "ref() for ref to $desc");
+        like ("$ref", qr/^$type\(0x[0-9a-f]+\)$/, "stringify for ref to $desc");
+    }
 }
+
+__END__
 
 is (ref *STDOUT{IO}, 'IO::File', 'IO refs are blessed into IO::File');
 like (*STDOUT{IO}, qr/^IO::File=IO\(0x[0-9a-f]+\)$/,
@@ -228,12 +250,16 @@ like (*STDOUT{IO}, qr/^IO::File=IO\(0x[0-9a-f]+\)$/,
   ok exists { ____ => undef }->{$dummy}, 'ref sets UTF8 flag correctly';
 }
 
+__END__
+
 # Test anonymous hash syntax.
 
 $anonhash = {};
 is (ref $anonhash, 'HASH');
 $anonhash2 = {FOO => 'BAR', ABC => 'XYZ',};
 is (join('', sort values %$anonhash2), 'BARXYZ');
+
+__END__
 
 # Test bless operator.
 
@@ -274,6 +300,8 @@ DESTROY {
     main::isnt (ref shift, 'HASH');
 }
 
+__END__
+
 # Now test inheritance of methods.
 
 package OBJ;
@@ -283,6 +311,8 @@ package OBJ;
 $main'object = bless {FOO => 'foo', BAR => 'bar'};
 
 package main;
+
+__END__
 
 # Test arrow-style method invocation.
 
@@ -309,6 +339,8 @@ package WHATEVER;
 foo WHATEVER "works";
 
 #
+__END__
+
 # test the \(@foo) construct
 #
 package main;
@@ -331,6 +363,8 @@ is (scalar (@bzz), 3);
 eval '\\($x, $y) = (1, 2);';
 like ($@, qr/Can\'t modify.*ref.*in.*assignment(?x:
            )|Experimental aliasing via reference not enabled/);
+
+__END__
 
 # test for proper destruction of lexical objects
 $test = curr_test();
@@ -363,6 +397,8 @@ $_   = \$var;
 is ($$_, 'glob 4');
 
 
+__END__
+
 # test if reblessing during destruction results in more destruction
 $test = curr_test();
 {
@@ -376,6 +412,8 @@ $test = curr_test();
     my $b = _B->new;
 }
 curr_test($test + 2);
+
+__END__
 
 # test if $_[0] is properly protected in DESTROY()
 
@@ -399,6 +437,8 @@ curr_test($test + 2);
     }
     print "# good, didn't recurse\n";
 }
+
+__END__
 
 # test that DESTROY is called on all objects during global destruction,
 # even those without hard references [perl #36347]
@@ -425,6 +465,8 @@ fresh_perl_is(
    { stderr => 1 },
   'no double free when stashes are blessed into each other');
 
+__END__
+
 
 # test if refgen behaves with autoviv magic
 {
@@ -437,6 +479,8 @@ fresh_perl_is(
     }
     is ($got, ";good;");
 }
+
+__END__
 
 # This test is the reason for postponed destruction in sv_unref
 $a = [1,2,3];
