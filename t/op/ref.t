@@ -20,7 +20,7 @@ eval { die  1..127, $_=\() };
 
 {
     note("Test glob operations");
-    
+
     $bar = "one";
     $foo = "two";
     {
@@ -28,7 +28,7 @@ eval { die  1..127, $_=\() };
         is($foo, 'one');
     }
     is ($foo, 'two');
-    
+
     $baz = "three";
     $foo = "four";
     {
@@ -36,7 +36,7 @@ eval { die  1..127, $_=\() };
         is ($foo, 'three');
     }
     is ($foo, 'four');
-    
+
     $foo = "global";
     {
         local(*foo);
@@ -69,7 +69,7 @@ eval { die  1..127, $_=\() };
 {
     note("Test references to real arrays");
 
-    my $test = curr_test();
+    $test = curr_test();
     my @ary = ($test,$test+1,$test+2,$test+3);
     $ref[0] = \@a;
     $ref[1] = \@b;
@@ -96,16 +96,16 @@ curr_test($test+4);
 
 {
     note("Test nested anonymous arrays");
-    
+
     $ref = [[],2,[3,4,5,]];
     is (scalar @$ref, 3);
     is ($$ref[1], 2);
     is (${$$ref[2]}[2], 5);
     is (scalar @{$$ref[0]}, 0);
-    
+
     is ($ref->[1], 2);
     is ($ref->[2]->[0], 3);
-    
+
     $refref = \%whatever;
     $refref->{"key"} = $ref;
     is ($refref->{"key"}->[2]->[0], 3,
@@ -137,7 +137,7 @@ curr_test($test+4);
     &$subref;
     is ($called, 1);
     is ref eval {\&{""}}, "CODE", 'reference to &{""} [perl #94476]';
-    delete $My::{"Foo::"}; 
+    delete $My::{"Foo::"};
     is ref \&My::Foo::foo, "CODE",
       'creating stub with \&deleted_stash::foo [perl #128532]';
 }
@@ -170,7 +170,7 @@ SKIP: {
     my $y = $$x;
     is ($y, $str, "bare REGEXP stringifies correctly");
     ok (eval { "x" =~ $y }, "bare REGEXP matches correctly");
-    
+
     my $z = \$y;
     ok (re::is_regexp($z), "new ref to REXEXP passes is_regexp");
     is ($z, $str, "new ref to REGEXP stringifies correctly");
@@ -189,20 +189,52 @@ SKIP: {
 }
 
 {
+    note("Test dereferencing errors");
+
+    # Note: format declarations are not block-scoped; they apply throughout a
+    # file (as do subroutines).  The following format declaration is used in
+    # blocks other than this one in this file.
+
+    format STDERR =
+.
+    my $ref;
+    foreach $ref (*STDOUT{IO}, *STDERR{FORMAT}) {
+        eval q/ $$ref /;
+        like($@, qr/Not a SCALAR reference/, "Scalar dereference");
+        eval q/ @$ref /;
+        like($@, qr/Not an ARRAY reference/, "Array dereference");
+        eval q/ %$ref /;
+        like($@, qr/Not a HASH reference/, "Hash dereference");
+        eval q/ &$ref /;
+        like($@, qr/Not a CODE reference/, "Code dereference");
+    }
+
+    $ref = *STDERR{FORMAT};
+    eval q/ *$ref /;
+    like($@, qr/Not a GLOB reference/, "Glob dereference");
+
+    $ref = *STDOUT{IO};
+    eval q/ *$ref /;
+    is($@, '', "Glob dereference of PVIO is acceptable");
+
+    is($ref, *{$ref}{IO}, "IO slot of the temporary glob is set correctly");
+}
+
+{
     note("Test the ref operator");
-    
+
     sub PVBM () { 'foo' }
     { my $dummy = index 'foo', PVBM }
-    
+
     my $pviv = 1; "$pviv";
     my $pvnv = 1.0; "$pvnv";
     my $x;
-    
+
     # we don't test
     #   tied lvalue => SCALAR, as we haven't tested tie yet
     #   BIND, 'cos we can't create them yet
     #   REGEXP, 'cos that requires overload or Scalar::Util
-    
+
     for (
         [ 'undef',          SCALAR  => \undef               ],
         [ 'constant IV',    SCALAR  => \1                   ],
@@ -219,7 +251,7 @@ SKIP: {
         [ 'ref',            REF     => \\1                  ],
         [ 'substr lvalue',  LVALUE  => \substr($x, 0, 0)    ],
         [ 'pos lvalue',     LVALUE  => \pos                 ],
-        [ 'vec lvalue',     LVALUE  => \vec($x,0,1)         ],     
+        [ 'vec lvalue',     LVALUE  => \vec($x,0,1)         ],
         [ 'named array',    ARRAY   => \@ary                ],
         [ 'anon array',     ARRAY   => [ 1 ]                ],
         [ 'named hash',     HASH    => \%whatever           ],
@@ -228,14 +260,13 @@ SKIP: {
         [ 'anon sub',       CODE    => sub { 1; }           ],
         [ 'glob',           GLOB    => \*foo                ],
         [ 'format',         FORMAT  => *STDERR{FORMAT}      ],
+        # Note: See previous block for where *STDERR{FORMAT} is declared
     ) {
         my ($desc, $type, $ref) = @$_;
         is (ref $ref, $type, "ref() for ref to $desc");
         like ("$ref", qr/^$type\(0x[0-9a-f]+\)$/, "stringify for ref to $desc");
     }
 }
-
-__END__
 
 is (ref *STDOUT{IO}, 'IO::File', 'IO refs are blessed into IO::File');
 like (*STDOUT{IO}, qr/^IO::File=IO\(0x[0-9a-f]+\)$/,
@@ -250,87 +281,83 @@ like (*STDOUT{IO}, qr/^IO::File=IO\(0x[0-9a-f]+\)$/,
   ok exists { ____ => undef }->{$dummy}, 'ref sets UTF8 flag correctly';
 }
 
-__END__
+{
+    note("Test anonymous hash syntax");
 
-# Test anonymous hash syntax.
+    $anonhash = {};
+    is (ref $anonhash, 'HASH', "Reference to a hash");
+    $anonhash2 = {FOO => 'BAR', ABC => 'XYZ'};
+    is (join('', sort values %$anonhash2), 'BARXYZ', "Got expected values");
 
-$anonhash = {};
-is (ref $anonhash, 'HASH');
-$anonhash2 = {FOO => 'BAR', ABC => 'XYZ',};
-is (join('', sort values %$anonhash2), 'BARXYZ');
+    note("Test bless operator");
 
-__END__
+    package MYHASH;
 
-# Test bless operator.
+    our $object = bless $main'anonhash2;
+    main::is (ref $object, 'MYHASH', "Object was blessed into MYHASH class");
+    main::is ($object->{ABC}, 'XYZ', "Dereferencing object returned expected value");
 
-package MYHASH;
+    our $object2 = bless {};
+    main::is (ref $object2,	'MYHASH', "Object is instance of MYHASH class");
 
-$object = bless $main'anonhash2;
-main::is (ref $object, 'MYHASH');
-main::is ($object->{ABC}, 'XYZ');
+    main::note("Test ordinary call on object method");
 
-$object2 = bless {};
-main::is (ref $object2,	'MYHASH');
+    sub mymethod {
+        local($THIS, @ARGS) = @_;
+        die 'Got a "' . ref($THIS). '" instead of a MYHASH'
+            unless ref $THIS eq 'MYHASH';
+        main::is ($ARGS[0], "argument", "Got expected argument");
+        main::is ($THIS->{FOO}, 'BAR', "Got expected value from dereferencing");
+    }
 
-# Test ordinary call on object method.
+    &mymethod($object,"argument");
 
-&mymethod($object,"argument");
+    main::note("Test automatic destructor call");
 
-sub mymethod {
-    local($THIS, @ARGS) = @_;
-    die 'Got a "' . ref($THIS). '" instead of a MYHASH'
-	unless ref $THIS eq 'MYHASH';
-    main::is ($ARGS[0], "argument");
-    main::is ($THIS->{FOO}, 'BAR');
+    $string = "bad";
+    $object = "foo";
+    $string = "good";
+    $main'anonhash2 = "foo";
+    $string = "";
+
+    DESTROY {
+        return unless $string;
+        main::is ($string, 'good', "Object destroyed");
+
+        # Test that the object has not already been "cursed".
+        main::isnt (ref shift, 'HASH', "Object wasn't cursed");
+    }
 }
 
-# Test automatic destructor call.
+{
+    note("Now test inheritance of methods");
 
-$string = "bad";
-$object = "foo";
-$string = "good";
-$main'anonhash2 = "foo";
-$string = "";
+    package OBJ;
 
-DESTROY {
-    return unless $string;
-    main::is ($string, 'good');
+    our @ISA = ('BASEOBJ');
 
-    # Test that the object has not already been "cursed".
-    main::isnt (ref shift, 'HASH');
-}
+    $main'object = bless {FOO => 'foo', BAR => 'bar'};
 
-__END__
+    package main;
 
-# Now test inheritance of methods.
+    note("Test arrow-style method invocation");
 
-package OBJ;
+    is ($object->doit("BAR"), 'bar');
 
-@ISA = ('BASEOBJ');
+    note("Test indirect-object-style method invocation");
 
-$main'object = bless {FOO => 'foo', BAR => 'bar'};
+    $foo = doit $object "FOO";
+    is ($foo, 'foo');
 
-package main;
-
-__END__
-
-# Test arrow-style method invocation.
-
-is ($object->doit("BAR"), 'bar');
-
-# Test indirect-object-style method invocation.
-
-$foo = doit $object "FOO";
-main::is ($foo, 'foo');
-
-sub BASEOBJ'doit {
-    local $ref = shift;
-    die "Not an OBJ" unless ref $ref eq 'OBJ';
-    $ref->{shift()};
+    sub BASEOBJ'doit {
+        local $ref = shift;
+        die "Not an OBJ" unless ref $ref eq 'OBJ';
+        $ref->{shift()};
+    }
 }
 
 package UNIVERSAL;
-@ISA = 'LASTCHANCE';
+our @ISA = 'LASTCHANCE';
 
 package LASTCHANCE;
 sub foo { main::is ($_[1], 'works') }
@@ -338,11 +365,9 @@ sub foo { main::is ($_[1], 'works') }
 package WHATEVER;
 foo WHATEVER "works";
 
-#
-__END__
 
-# test the \(@foo) construct
-#
+main::note('Test the \(@foo) construct');
+
 package main;
 @foo = \(1..3);
 @bar = \(@foo);
@@ -359,65 +384,65 @@ is (scalar grep(ref($_), @baa), 3);
 is (scalar (@bzz), 3);
 
 # also, it can't be an lvalue
-# (That’s what *you* think!  --sprout)
 eval '\\($x, $y) = (1, 2);';
 like ($@, qr/Can\'t modify.*ref.*in.*assignment(?x:
-           )|Experimental aliasing via reference not enabled/);
-
-__END__
-
-# test for proper destruction of lexical objects
-$test = curr_test();
-sub larry::DESTROY { print "# larry\nok $test\n"; }
-sub curly::DESTROY { print "# curly\nok ", $test + 1, "\n"; }
-sub moe::DESTROY   { print "# moe\nok ", $test + 2, "\n"; }
+           )|Experimental aliasing via reference not enabled/,
+    '(That’s what *you* think!  --sprout)'
+);
 
 {
-    my ($joe, @curly, %larry);
-    my $moe = bless \$joe, 'moe';
-    my $curly = bless \@curly, 'curly';
-    my $larry = bless \%larry, 'larry';
-    print "# leaving block\n";
+    note("Test for proper destruction of lexical objects");
+    $test = curr_test();
+    sub larry::DESTROY { print "# larry\nok $test\n"; }
+    sub curly::DESTROY { print "# curly\nok ", $test + 1, "\n"; }
+    sub moe::DESTROY   { print "# moe\nok ", $test + 2, "\n"; }
+
+    {
+        my ($joe, @curly, %larry);
+        my $moe = bless \$joe, 'moe';
+        my $curly = bless \@curly, 'curly';
+        my $larry = bless \%larry, 'larry';
+        print "# leaving block\n";
+    }
+
+    print "# left block\n";
+    curr_test($test + 3);
 }
 
-print "# left block\n";
-curr_test($test + 3);
-
-# another glob test
-
-
-$foo = "garbage";
-{ local(*bar) = "foo" }
-$bar = "glob 3";
-local(*bar) = *bar;
-is ($bar, "glob 3");
-
-$var = "glob 4";
-$_   = \$var;
-is ($$_, 'glob 4');
-
-
-__END__
-
-# test if reblessing during destruction results in more destruction
-$test = curr_test();
 {
-    package A;
-    sub new { bless {}, shift }
-    DESTROY { print "# destroying 'A'\nok ", $test + 1, "\n" }
-    package _B;
-    sub new { bless {}, shift }
-    DESTROY { print "# destroying '_B'\nok $test\n"; bless shift, 'A' }
-    package main;
-    my $b = _B->new;
+    note("another glob test");
+
+    $foo = "garbage";
+    { local(*bar) = "foo" }
+    $bar = "glob 3";
+    local(*bar) = *bar;
+    is ($bar, "glob 3", "localized typeglob");
+
+    $var = "glob 4";
+    $_   = \$var;
+    is ($$_, 'glob 4', "localized typeglob");
 }
-curr_test($test + 2);
-
-__END__
-
-# test if $_[0] is properly protected in DESTROY()
 
 {
+    note("Test if reblessing during destruction results in more destruction");
+    $test = curr_test();
+    {
+        package A;
+        sub new { bless {}, shift }
+        DESTROY { print "# destroying 'A'\nok ", $main::test + 1, "\n" }
+        package _B;
+        sub new { bless {}, shift }
+        DESTROY { print "# destroying '_B'\nok $main::test\n"; bless shift, 'A' }
+        package main;
+        my $b = _B->new;
+    }
+    curr_test($test + 2);
+}
+
+
+{
+    note("Test if $_[0] is properly protected in DESTROY()");
+
     my $test = curr_test();
     my $i = 0;
     local $SIG{'__DIE__'} = sub {
@@ -428,78 +453,79 @@ __END__
         }
 	like ($m, qr/^Modification of a read-only/);
     };
+
     package C;
     sub new { bless {}, shift }
     DESTROY { $_[0] = 'foo' }
     {
-	print "# should generate an error...\n";
-	my $c = C->new;
+	    print "# should generate an error...\n";
+	    my $c = C->new;
     }
     print "# good, didn't recurse\n";
 }
 
-__END__
-
-# test that DESTROY is called on all objects during global destruction,
-# even those without hard references [perl #36347]
-
-is(
-  runperl(
-   stderr => 1, prog => 'sub DESTROY { print qq-aaa\n- } bless \$a[0]'
-  ),
- "aaa\n", 'DESTROY called on array elem'
-);
-is(
-  runperl(
-   stderr => 1,
-   prog => '{ bless \my@x; *a=sub{@x}}sub DESTROY { print qq-aaa\n- }'
-  ),
- "aaa\n",
- 'DESTROY called on closure variable'
-);
-
-# But cursing objects must not result in double frees
-# This caused "Attempt to free unreferenced scalar" in 5.16.
-fresh_perl_is(
-  'bless \%foo::, bar::; bless \%bar::, foo::; print "ok\n"', "ok\n",
-   { stderr => 1 },
-  'no double free when stashes are blessed into each other');
-
-__END__
-
-
-# test if refgen behaves with autoviv magic
 {
-    my @a;
-    $a[1] = "good";
-    my $got;
-    for (@a) {
-	$got .= ${\$_};
-	$got .= ';';
-    }
-    is ($got, ";good;");
+    my $message = "Test that DESTROY is called on all objects during global destruction,\n";
+    $message .= 'even those without hard references [perl #36347]';
+    note($message);
+
+    is(
+      runperl(
+       stderr => 1, prog => 'sub DESTROY { print qq-aaa\n- } bless \$a[0]'
+      ),
+     "aaa\n", 'DESTROY called on array elem'
+    );
+    is(
+      runperl(
+       stderr => 1,
+       prog => '{ bless \my@x; *a=sub{@x}}sub DESTROY { print qq-aaa\n- }'
+      ),
+     "aaa\n",
+     'DESTROY called on closure variable'
+    );
+
+    # But cursing objects must not result in double frees
+    # This caused "Attempt to free unreferenced scalar" in 5.16.
+    fresh_perl_is(
+      'bless \%foo::, bar::; bless \%bar::, foo::; print "ok\n"', "ok\n",
+       { stderr => 1 },
+      'no double free when stashes are blessed into each other');
 }
 
-__END__
 
-# This test is the reason for postponed destruction in sv_unref
-$a = [1,2,3];
-$a = $a->[1];
-is ($a, 2);
+{
+    note("Test if refgen behaves with autoviv magic");
+    {
+        my @a;
+        $a[1] = "good";
+        my $got;
+        for (@a) {
+            $got .= ${\$_};
+            $got .= ';';
+        }
+        is ($got, ";good;", 'refgen behaves with autoviv magic');
+    }
+}
+
+{
+    # This test is the reason for postponed destruction in sv_unref
+    $alpha = [1,2,3];
+    $alpha = $alpha->[1];
+    is ($alpha, 2, 'postponed destruction in sv_unref');
+}
 
 # This test used to coredump. The BEGIN block is important as it causes the
 # op that created the constant reference to be freed. Hence the only
 # reference to the constant string "pass" is in $a. The hack that made
 # sure $a = $a->[1] would work didn't work with references to constants.
 
-
 foreach my $lexical ('', 'my $a; ') {
   my $expect = "pass\n";
   my $result = runperl (switches => ['-wl'], stderr => 1,
     prog => $lexical . 'BEGIN {$a = \q{pass}}; $a = $$a; print $a');
 
-  is ($?, 0);
-  is ($result, $expect);
+  is ($?, 0, 'no child error');
+  is ($result, $expect, 'got expected result');
 }
 
 $test = curr_test();
@@ -520,16 +546,16 @@ is (runperl (switches=>['-l'],
 # bug #21347
 
 runperl(prog => 'sub UNIVERSAL::AUTOLOAD { qr// } a->p' );
-is ($?, 0, 'UNIVERSAL::AUTOLOAD called when freeing qr//');
+is ($?, 0, 'UNIVERSAL::AUTOLOAD called when freeing qr// - GH 6329');
 
 runperl(prog => 'sub UNIVERSAL::DESTROY { warn } bless \$a, A', stderr => 1);
-is ($?, 0, 'warn called inside UNIVERSAL::DESTROY');
+is ($?, 0, 'warn called inside UNIVERSAL::DESTROY - GH 6329');
 
 
 # bug #22719
 
 runperl(prog => 'sub f { my $x = shift; *z = $x; } f({}); f();');
-is ($?, 0, 'coredump on typeglob = (SvRV && !SvROK)');
+is ($?, 0, 'coredump on typeglob = (SvRV && !SvROK) - GH 6567');
 
 # bug #27268: freeing self-referential typeglobs could trigger
 # "Attempt to free unreferenced scalar" warnings
@@ -537,7 +563,7 @@ is ($?, 0, 'coredump on typeglob = (SvRV && !SvROK)');
 is (runperl(
     prog => 'use Symbol;my $x=bless \gensym,q{t}; print;*$$x=$x',
     stderr => 1
-), '', 'freeing self-referential typeglob');
+), '', 'freeing self-referential typeglob - GH 7144');
 
 # using a regex in the destructor for STDOUT segfaulted because the
 # REGEX pad had already been freed (ithreads build only). The
@@ -658,7 +684,7 @@ TODO: {
     is (&{$name2}, "Two");
 }
 
-# test derefs after list slice
+note("Test derefs after list slice");
 
 is ( ({foo => "bar"})[0]{foo}, "bar", 'hash deref from list slice w/o ->' );
 is ( ({foo => "bar"})[0]->{foo}, "bar", 'hash deref from list slice w/ ->' );
@@ -667,39 +693,12 @@ is ( ([qw/foo bar/])[0]->[1], "bar", 'array deref from list slice w/ ->' );
 is ( (sub {"bar"})[0](), "bar", 'code deref from list slice w/o ->' );
 is ( (sub {"bar"})[0]->(), "bar", 'code deref from list slice w/ ->' );
 
-# deref on empty list shouldn't autovivify
+note("deref on empty list shouldn't autovivify");
 {
     local $@;
     eval { ()[0]{foo} };
     like ( "$@", qr/Can't use an undefined value as a HASH reference/,
            "deref of undef from list slice fails" );
-}
-
-# test dereferencing errors
-{
-    format STDERR =
-.
-    my $ref;
-    foreach $ref (*STDOUT{IO}, *STDERR{FORMAT}) {
-	eval q/ $$ref /;
-	like($@, qr/Not a SCALAR reference/, "Scalar dereference");
-	eval q/ @$ref /;
-	like($@, qr/Not an ARRAY reference/, "Array dereference");
-	eval q/ %$ref /;
-	like($@, qr/Not a HASH reference/, "Hash dereference");
-	eval q/ &$ref /;
-	like($@, qr/Not a CODE reference/, "Code dereference");
-    }
-
-    $ref = *STDERR{FORMAT};
-    eval q/ *$ref /;
-    like($@, qr/Not a GLOB reference/, "Glob dereference");
-
-    $ref = *STDOUT{IO};
-    eval q/ *$ref /;
-    is($@, '', "Glob dereference of PVIO is acceptable");
-
-    is($ref, *{$ref}{IO}, "IO slot of the temporary glob is set correctly");
 }
 
 # these will segfault if they fail
@@ -864,8 +863,8 @@ for ("4eounthouonth") {
 	'[perl #109746] referential identity of \literal under threads+mad'
 }
 
-# ref in boolean context
 {
+    note("ref in boolean context");
     my $false = 0;
     my $true  = 1;
     my $plain = [];
@@ -948,9 +947,9 @@ my $test2 = $test + 2;
 package FINALE;
 
 {
-    $ref3 = bless ["ok $test2\n"];	# package destruction
-    my $ref2 = bless ["ok $test1\n"];	# lexical destruction
-    local $ref1 = bless ["ok $test\n"];	# dynamic destruction
+    $ref3 = bless ["ok $test2 - package destruction\n"];	# package destruction
+    my $ref2 = bless ["ok $test1 - lexical destruction\n"];	# lexical destruction
+    local $ref1 = bless ["ok $main::test - dynamic destruction\n"];	# dynamic destruction
     1;					# flush any temp values on stack
 }
 
