@@ -30,6 +30,7 @@ plan (tests => 66880);
     local $@;
     no utf8;
     evalbytes '${single:colon} = "block/label, not var"';
+    no warnings 'once';
     is($::colon,
          'block/label, not var',
          '...same with ${single:colon}'
@@ -399,12 +400,15 @@ EOP
     # on the presence of the newline after '@{'.
     sub foo (&) { [1] }
     my %foo = (a=>2);
-    my $ret = @{ foo { "a" } };
-    is($ret, $foo{a}, '@{ foo { "a" } } is parsed as @foo{a}');
-    
-    $ret = @{
-            foo { "a" }
-        };
-    is($ret, $foo{a}, '@{\nfoo { "a" } } is still parsed as @foo{a}');
+    {
+        no warnings 'syntax';
+        my $ret = @{ foo { "a" } };
+        is($ret, $foo{a}, '@{ foo { "a" } } is parsed as @foo{a}');
+
+        $ret = @{
+                foo { "a" }
+            };
+        is($ret, $foo{a}, '@{\nfoo { "a" } } is still parsed as @foo{a}');
+    }
 
 }
